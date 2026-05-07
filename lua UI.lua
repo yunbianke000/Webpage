@@ -50,7 +50,7 @@ local PlayerESP = {
 
     triggerbotEnabled = false,
     triggerbotKey = "e",
-    triggerbotAlwaysOn = true, -- 设为true则无需按键，始终自动开火
+    triggerbotAlwaysOn = true,
     triggerbotFiring = false,
     triggerbotConnection = nil,
     triggerbotBeganConn = nil,
