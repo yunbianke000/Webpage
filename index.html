@@ -57,6 +57,8 @@
             padding: 20px 40px;
             border-bottom: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .brand { display: flex; align-items: center; gap: 12px; }
@@ -114,6 +116,38 @@
         .tab-btn.active {
             background: var(--accent-cyan); color: var(--bg-primary);
             box-shadow: var(--glow-cyan);
+        }
+
+        .tutorial-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px;
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500;
+            transition: all 0.2s; white-space: nowrap;
+        }
+
+        .tutorial-btn:hover {
+            background: var(--accent-pink); color: white;
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 16px rgba(247, 120, 186, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .download-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px;
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500;
+            transition: all 0.2s; white-space: nowrap;
+        }
+
+        .download-btn:hover {
+            background: var(--accent-green); color: white;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 16px rgba(63, 185, 80, 0.3);
+            transform: translateY(-1px);
         }
 
         /* Main Layout */
@@ -531,6 +565,14 @@
             <button class="tab-btn active" onclick="switchMode('demo')" data-i18n="tab_demo">演示模式</button>
             <button class="tab-btn" onclick="switchMode('game')" data-i18n="tab_game">游玩模式</button>
         </div>
+        <a class="tutorial-btn" href="https://www.bilibili.com/video/BV1hPSvB3EQz" target="_blank" rel="noopener noreferrer">
+            <span>📺</span>
+            <span data-i18n="btn_tutorial">教程视频</span>
+        </a>
+        <a class="download-btn" href="http://web.fish233.com/app-home.html" download target="_blank" rel="noopener noreferrer">
+            <span>📥</span>
+            <span data-i18n="btn_download">编译器下载</span>
+        </a>
     </header>
 
     <div class="main-container">
@@ -711,6 +753,8 @@
                 btn_start: '开始',
                 btn_reset: '重置',
                 btn_restart: '重新开始',
+                btn_tutorial: '教程视频',
+                btn_download: '下载编译器',
                 panel_code: '代码',
                 panel_progress: '进度',
                 panel_callstack: '调用栈',
@@ -768,6 +812,8 @@
                 btn_start: 'Start',
                 btn_reset: 'Reset',
                 btn_restart: 'Restart',
+                btn_tutorial: 'Tutorial',
+                btn_download: 'Compiler Download',
                 panel_code: 'Code',
                 panel_progress: 'Progress',
                 panel_callstack: 'Call Stack',
@@ -824,6 +870,8 @@
                 btn_start: 'Старт',
                 btn_reset: 'Сброс',
                 btn_restart: 'Заново',
+                btn_tutorial: 'Видеоурок',
+                btn_download: 'Скачать компилятор',
                 panel_code: 'Код',
                 panel_progress: 'Прогресс',
                 panel_callstack: 'Стек вызовов',
@@ -880,6 +928,8 @@
                 btn_start: '開始',
                 btn_reset: 'リセット',
                 btn_restart: 'リスタート',
+                btn_tutorial: 'チュートリアル動画',
+                btn_download: 'コンパイラーダウンロード',
                 panel_code: 'コード',
                 panel_progress: '進捗',
                 panel_callstack: 'コールスタック',
