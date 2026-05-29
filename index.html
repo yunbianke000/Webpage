@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汉诺塔 | Tower of Hanoi</title>
+    <title>工具箱 | Toolbox</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         
@@ -98,7 +98,7 @@
             color: var(--text-primary);
         }
 
-        /* Tab Bar */
+        /* Tab Bar - Top Level */
         .tab-bar {
             display: flex; gap: 4px;
             background: var(--bg-tertiary); border-radius: 10px; padding: 4px;
@@ -134,22 +134,6 @@
             transform: translateY(-1px);
         }
 
-        .download-btn {
-            display: flex; align-items: center; gap: 6px;
-            padding: 8px 16px; border-radius: 8px;
-            background: var(--bg-tertiary); border: 1px solid var(--border-color);
-            color: var(--text-secondary); text-decoration: none;
-            font-size: 0.85rem; font-weight: 500;
-            transition: all 0.2s; white-space: nowrap;
-        }
-
-        .download-btn:hover {
-            background: var(--accent-green); color: white;
-            border-color: var(--accent-green);
-            box-shadow: 0 0 16px rgba(63, 185, 80, 0.3);
-            transform: translateY(-1px);
-        }
-
         /* Main Layout */
         .main-container {
             position: relative; z-index: 1;
@@ -165,6 +149,26 @@
             display: flex; align-items: center; gap: 16px;
             padding: 12px 16px; background: var(--bg-secondary);
             border: 1px solid var(--border-color); border-radius: 12px;
+        }
+
+        /* Sub-tabs inside control bar */
+        .sub-tab-bar {
+            display: flex; gap: 4px;
+            background: var(--bg-tertiary); border-radius: 8px; padding: 4px;
+        }
+
+        .sub-tab-btn {
+            padding: 6px 14px; border: none; border-radius: 6px;
+            background: transparent; color: var(--text-secondary);
+            font-size: 0.8rem; font-weight: 500; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+        }
+
+        .sub-tab-btn:hover { color: var(--text-primary); }
+
+        .sub-tab-btn.active {
+            background: var(--accent-purple); color: white;
+            box-shadow: var(--glow-purple);
         }
 
         .control-group { display: flex; align-items: center; gap: 10px; }
@@ -501,6 +505,358 @@
         body.game-active .mode-demo { display: none; }
         body.game-active .mode-game { display: block; }
 
+        /* Tool visibility */
+        .tool-hanoi { display: block; }
+        .tool-cps { display: none; }
+        .tool-reaction { display: none; }
+        body.cps-active .tool-hanoi { display: none; }
+        body.cps-active .tool-cps { display: block; }
+        body.cps-active .tool-reaction { display: none; }
+        body.reaction-active .tool-hanoi { display: none; }
+        body.reaction-active .tool-cps { display: none; }
+        body.reaction-active .tool-reaction { display: block; }
+
+        /* CPS Styles */
+        .cps-click-area {
+            width: 300px; height: 300px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 600; color: white;
+            cursor: pointer; transition: all 0.15s;
+            margin: 20px auto;
+            box-shadow: 0 8px 32px rgba(88, 166, 255, 0.3);
+            user-select: none;
+        }
+
+        .cps-click-area:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 40px rgba(88, 166, 255, 0.4);
+        }
+
+        .cps-click-area:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 20px rgba(88, 166, 255, 0.3);
+        }
+
+        .cps-click-area.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--bg-tertiary);
+        }
+
+        .cps-timer-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--accent-orange);
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .cps-realtime {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .cps-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+
+        .cps-stat-value {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.5rem;
+            font-weight: 600; color: var(--accent-cyan);
+        }
+
+        .cps-stat-value.best { color: var(--accent-green); }
+        .cps-stat-value.timer { color: var(--accent-orange); }
+
+        .cps-history-list {
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .cps-history-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .cps-history-cps {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .cps-history-mode {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .cps-result-panel {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .cps-result-cps {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+        }
+
+        .cps-result-rating {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .cps-rating-practice {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .cps-rating-normal {
+            background: var(--accent-orange);
+            color: white;
+        }
+
+        .cps-rating-good {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .cps-rating-god {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            color: white;
+        }
+
+        /* Reaction Test Styles */
+        .reaction-area {
+            width: 100%;
+            height: 350px;
+            border-radius: 16px;
+            background: var(--bg-tertiary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .reaction-area.waiting {
+            background: var(--bg-tertiary);
+            animation: reactionPulse 1.5s ease-in-out infinite;
+        }
+
+        .reaction-area.ready {
+            border-color: transparent;
+            box-shadow: 0 0 40px rgba(63, 185, 80, 0.4), 0 0 80px rgba(63, 185, 80, 0.2);
+        }
+
+        .reaction-area.result {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        .reaction-area.too-early {
+            background: var(--accent-red) !important;
+            animation: reactionFlash 0.4s ease;
+        }
+
+        @keyframes reactionPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes reactionFlash {
+            0% { opacity: 1; transform: scale(1); }
+            25% { opacity: 0.8; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.01); }
+            75% { opacity: 0.9; transform: scale(0.99); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes reactionResultIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .reaction-area-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .reaction-area.waiting .reaction-area-text {
+            color: var(--text-muted);
+        }
+
+        .reaction-area.ready .reaction-area-text {
+            color: white;
+            font-size: 2rem;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .reaction-area.too-early .reaction-area-text {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .reaction-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            animation: reactionResultIn 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        .reaction-rating {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            animation: reactionResultIn 0.3s ease 0.1s both;
+        }
+
+        .reaction-rating.god {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .reaction-rating.excellent {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .reaction-rating.normal {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .reaction-rating.practice {
+            background: var(--accent-orange);
+            color: white;
+        }
+
+        .reaction-sub-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 12px;
+            animation: reactionResultIn 0.3s ease 0.2s both;
+        }
+
+        .reaction-countdown {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .reaction-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 16px; }
+
+        .reaction-stat-value {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.3rem;
+            font-weight: 600; color: var(--accent-cyan);
+        }
+
+        .reaction-stat-value.best { color: var(--accent-green); }
+        .reaction-stat-value.avg { color: var(--accent-purple); }
+
+        .reaction-history-list {
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .reaction-history-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .reaction-history-time {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .reaction-history-rating {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .reaction-history-rating.god { background: var(--accent-purple); color: white; }
+        .reaction-history-rating.excellent { background: var(--accent-green); color: white; }
+        .reaction-history-rating.normal { background: var(--accent-cyan); color: var(--bg-primary); }
+        .reaction-history-rating.practice { background: var(--accent-orange); color: white; }
+
+        .reaction-history-date {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .reaction-tips-content {
+            padding: 16px;
+        }
+
+        .reaction-tips-content li {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            padding-left: 4px;
+            line-height: 1.5;
+        }
+
+        .reaction-tips-content li::before {
+            content: '>';
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            padding: 2px;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
+
         /* Animations */
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(-8px); }
@@ -537,6 +893,8 @@
             .right-panel { grid-template-columns: 1fr; }
             .stage-container { padding: 24px; }
             header { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+            .cps-click-area { width: 250px; height: 250px; }
+            .reaction-area { height: 280px; }
         }
     </style>
 </head>
@@ -547,10 +905,10 @@
 
     <header>
         <div class="brand">
-            <div class="brand-icon">🗼</div>
+            <div class="brand-icon">🧰</div>
             <div>
-                <div class="brand-text" data-i18n="brand_title">汉诺塔</div>
-                <div class="brand-subtitle" data-i18n="brand_subtitle">Tower of Hanoi</div>
+                <div class="brand-text" data-i18n="brand_title">工具箱</div>
+                <div class="brand-subtitle" data-i18n="brand_subtitle">多功能平台</div>
             </div>
         </div>
         <div class="lang-switcher">
@@ -562,174 +920,298 @@
             </select>
         </div>
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchMode('demo')" data-i18n="tab_demo">演示模式</button>
-            <button class="tab-btn" onclick="switchMode('game')" data-i18n="tab_game">游玩模式</button>
+            <button class="tab-btn active" onclick="switchTool('hanoi')" data-i18n="tab_hanoi">汉诺塔</button>
+            <button class="tab-btn" onclick="switchTool('cps')" data-i18n="tab_cps">CPS测试</button>
+            <button class="tab-btn" onclick="switchTool('reaction')" data-i18n="tab_reaction">反应测试</button>
         </div>
-        <a class="tutorial-btn" href="https://www.bilibili.com/video/BV1hPSvB3EQz" target="_blank" rel="noopener noreferrer">
+        <a class="tutorial-btn hanoi-only" href="https://www.bilibili.com/video/BV1hPSvB3EQz" target="_blank" rel="noopener noreferrer">
             <span>📺</span>
             <span data-i18n="btn_tutorial">教程视频</span>
-        </a>
-        <a class="download-btn" href="http://web.fish233.com/app-home.html" download target="_blank" rel="noopener noreferrer">
-            <span>📥</span>
-            <span data-i18n="btn_download">编译器下载</span>
         </a>
     </header>
 
     <div class="main-container">
         <div class="left-panel">
-            <!-- ========== DEMO MODE ========== -->
-            <div class="mode-demo">
-                <div class="control-bar">
-                    <div class="control-group">
-                        <span class="control-label" data-i18n="label_disks">Disks</span>
-                        <div class="disk-slider">
-                            <input type="range" id="diskInput" min="3" max="8" value="3">
-                            <span class="disk-count" id="diskCount">3</span>
+            <!-- ========== HANOI TOOL ========== -->
+            <div class="tool-hanoi">
+                <!-- ========== DEMO MODE ========== -->
+                <div class="mode-demo">
+                    <div class="control-bar">
+                        <div class="sub-tab-bar">
+                            <button class="sub-tab-btn active" onclick="switchMode('demo')" data-i18n="tab_demo">演示模式</button>
+                            <button class="sub-tab-btn" onclick="switchMode('game')" data-i18n="tab_game">游玩模式</button>
+                        </div>
+                        <div class="control-group">
+                            <span class="control-label" data-i18n="label_disks">Disks</span>
+                            <div class="disk-slider">
+                                <input type="range" id="diskInput" min="3" max="8" value="3">
+                                <span class="disk-count" id="diskCount">3</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <span class="control-label" data-i18n="label_speed">Speed</span>
+                            <div class="speed-control">
+                                <button class="speed-btn" data-speed="1200" data-i18n="speed_slow">Slow</button>
+                                <button class="speed-btn active" data-speed="600" data-i18n="speed_normal">Normal</button>
+                                <button class="speed-btn" data-speed="300" data-i18n="speed_fast">Fast</button>
+                            </div>
+                        </div>
+                        <div style="margin-left: auto; display: flex; gap: 8px;">
+                            <button class="btn btn-primary" id="startBtn" onclick="start()"><span>▶</span> <span data-i18n="btn_start">Start</span></button>
+                            <button class="btn btn-secondary" id="resetBtn" onclick="reset()"><span>↺</span> <span data-i18n="btn_reset">Reset</span></button>
                         </div>
                     </div>
-                    <div class="control-group">
-                        <span class="control-label" data-i18n="label_speed">Speed</span>
-                        <div class="speed-control">
-                            <button class="speed-btn" data-speed="1200" data-i18n="speed_slow">Slow</button>
-                            <button class="speed-btn active" data-speed="600" data-i18n="speed_normal">Normal</button>
-                            <button class="speed-btn" data-speed="300" data-i18n="speed_fast">Fast</button>
+                    <div class="step-nav">
+                        <button class="step-nav-btn" id="prevBtn" onclick="stepBackward()" disabled>◀</button>
+                        <button class="step-nav-btn play-pause" id="playPauseBtn" onclick="togglePlayPause()" disabled>▶</button>
+                        <button class="step-nav-btn" id="nextBtn" onclick="stepForward()" disabled>▶</button>
+                        <div class="step-nav-info">
+                            <span class="current" id="navStep">0</span> / <span id="navTotal">0</span>
                         </div>
-                    </div>
-                    <div style="margin-left: auto; display: flex; gap: 8px;">
-                        <button class="btn btn-primary" id="startBtn" onclick="start()"><span>▶</span> <span data-i18n="btn_start">Start</span></button>
-                        <button class="btn btn-secondary" id="resetBtn" onclick="reset()"><span>↺</span> <span data-i18n="btn_reset">Reset</span></button>
                     </div>
                 </div>
-                <div class="step-nav">
-                    <button class="step-nav-btn" id="prevBtn" onclick="stepBackward()" disabled>◀</button>
-                    <button class="step-nav-btn play-pause" id="playPauseBtn" onclick="togglePlayPause()" disabled>▶</button>
-                    <button class="step-nav-btn" id="nextBtn" onclick="stepForward()" disabled>▶</button>
-                    <div class="step-nav-info">
-                        <span class="current" id="navStep">0</span> / <span id="navTotal">0</span>
+
+                <!-- ========== GAME MODE ========== -->
+                <div class="mode-game">
+                    <div class="control-bar">
+                        <div class="sub-tab-bar">
+                            <button class="sub-tab-btn" onclick="switchMode('demo')" data-i18n="tab_demo">演示模式</button>
+                            <button class="sub-tab-btn active" onclick="switchMode('game')" data-i18n="tab_game">游玩模式</button>
+                        </div>
+                        <div class="control-group">
+                            <span class="control-label" data-i18n="label_disks">Disks</span>
+                            <div class="disk-slider">
+                                <input type="range" id="gameDiskInput" min="3" max="8" value="3">
+                                <span class="disk-count" id="gameDiskCount">3</span>
+                            </div>
+                        </div>
+                        <div style="margin-left: auto; display: flex; gap: 8px;">
+                            <button class="btn btn-primary" id="gameResetBtn" onclick="gameReset()"><span>↺</span> <span data-i18n="btn_restart">Restart</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage (shared) -->
+                <div class="stage-container">
+                    <div class="game-hint" id="gameHint"></div>
+                    <div class="stage" id="stage">
+                        <div class="base"></div>
+                        <div class="pole-wrapper" id="wrapper-A" onclick="onPoleClick('A')">
+                            <div class="pole" id="A"></div>
+                            <div class="pole-label">A</div>
+                        </div>
+                        <div class="pole-wrapper" id="wrapper-B" onclick="onPoleClick('B')">
+                            <div class="pole" id="B"></div>
+                            <div class="pole-label">B</div>
+                        </div>
+                        <div class="pole-wrapper" id="wrapper-C" onclick="onPoleClick('C')">
+                            <div class="pole" id="C"></div>
+                            <div class="pole-label">C</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ========== GAME MODE ========== -->
-            <div class="mode-game">
+            <!-- ========== CPS TOOL ========== -->
+            <div class="tool-cps">
                 <div class="control-bar">
-                    <div class="control-group">
-                        <span class="control-label" data-i18n="label_disks">Disks</span>
-                        <div class="disk-slider">
-                            <input type="range" id="gameDiskInput" min="3" max="8" value="3">
-                            <span class="disk-count" id="gameDiskCount">3</span>
-                        </div>
+                    <div class="sub-tab-bar">
+                        <button class="sub-tab-btn active" onclick="switchCPSMode('5s')" data-i18n="cps_mode_5s">5秒</button>
+                        <button class="sub-tab-btn" onclick="switchCPSMode('10s')" data-i18n="cps_mode_10s">10秒</button>
                     </div>
-                    <div style="margin-left: auto; display: flex; gap: 8px;">
-                        <button class="btn btn-primary" id="gameResetBtn" onclick="gameReset()"><span>↺</span> <span data-i18n="btn_restart">Restart</span></button>
+                    <div style="margin-left: auto;">
+                        <button class="btn btn-primary" id="cpsStartBtn" onclick="startCPS()"><span>▶</span> <span data-i18n="cps_start">开始</span></button>
                     </div>
+                </div>
+                <div class="stage-container" style="flex-direction: column; align-items: center; justify-content: center;">
+                    <div class="cps-click-area disabled" id="cpsClickArea" data-i18n="cps_click_here">点击这里</div>
+                    <div class="cps-timer-display" id="cpsTimerDisplay">0.0</div>
+                    <div class="cps-realtime" id="cpsRealtime">CPS: 0.0</div>
                 </div>
             </div>
 
-            <!-- Stage (shared) -->
-            <div class="stage-container">
-                <div class="game-hint" id="gameHint"></div>
-                <div class="stage" id="stage">
-                    <div class="base"></div>
-                    <div class="pole-wrapper" id="wrapper-A" onclick="onPoleClick('A')">
-                        <div class="pole" id="A"></div>
-                        <div class="pole-label">A</div>
+            <!-- ========== REACTION TOOL ========== -->
+            <div class="tool-reaction">
+                <div class="control-bar">
+                    <div class="control-group">
+                        <span class="control-label" data-i18n="reaction_delay">延迟时间</span>
+                        <div class="disk-slider">
+                            <input type="range" id="reactionDelayInput" min="1" max="10" value="3" step="1">
+                            <span class="disk-count" id="reactionDelayValue">3s</span>
+                        </div>
                     </div>
-                    <div class="pole-wrapper" id="wrapper-B" onclick="onPoleClick('B')">
-                        <div class="pole" id="B"></div>
-                        <div class="pole-label">B</div>
+                    <div class="control-group">
+                        <span class="control-label" data-i18n="reaction_color">目标颜色</span>
+                        <input type="color" id="reactionColorInput" value="#3fb950">
                     </div>
-                    <div class="pole-wrapper" id="wrapper-C" onclick="onPoleClick('C')">
-                        <div class="pole" id="C"></div>
-                        <div class="pole-label">C</div>
+                    <div style="margin-left: auto;">
+                        <button class="btn btn-primary" id="reactionStartBtn" onclick="startReactionTest()"><span>▶</span> <span data-i18n="reaction_start">开始测试</span></button>
+                    </div>
+                </div>
+                <div class="stage-container" style="flex-direction: column; align-items: center; justify-content: center; padding: 24px;">
+                    <div class="reaction-area" id="reactionArea" onclick="handleReactionClick()">
+                        <div class="reaction-area-text" id="reactionAreaText" data-i18n="reaction_click_start">点击开始</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="right-panel">
-            <!-- ========== DEMO RIGHT PANEL ========== -->
-            <div class="mode-demo">
-                <div class="panel">
-                    <div class="panel-header"><span class="panel-title" data-i18n="panel_code">Code</span></div>
-                    <div class="code-content" id="codeContent">
-                        <div class="code-line" id="line0"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">hanoi</span>(n, a, b, c):</span></div>
-                        <div class="code-line" id="line1"><span class="line-number">2</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> n == <span class="number">1</span>:</span></div>
-                        <div class="code-line" id="line2"><span class="line-number">3</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">print</span>(<span class="string">f"{a} -&gt; {c}"</span>)</span></div>
-                        <div class="code-line" id="line3"><span class="line-number">4</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span>:</span></div>
-                        <div class="code-line" id="line4"><span class="line-number">5</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hanoi(n-<span class="number">1</span>, a, c, b)</span></div>
-                        <div class="code-line" id="line5"><span class="line-number">6</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">print</span>(<span class="string">f"{a} -&gt; {c}"</span>)</span></div>
-                        <div class="code-line" id="line6"><span class="line-number">7</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hanoi(n-<span class="number">1</span>, b, a, c)</span></div>
-                        <div class="code-line" id="line7"><span class="line-number">8</span><span class="line-content"></span></div>
-                        <div class="code-line" id="line8"><span class="line-number">9</span><span class="line-content">hanoi(<span class="number">3</span>, <span class="string">'A'</span>, <span class="string">'B'</span>, <span class="string">'C'</span>)</span></div>
+            <!-- ========== HANOI RIGHT PANEL ========== -->
+            <div class="tool-hanoi">
+                <!-- ========== DEMO RIGHT PANEL ========== -->
+                <div class="mode-demo">
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title" data-i18n="panel_code">Code</span></div>
+                        <div class="code-content" id="codeContent">
+                            <div class="code-line" id="line0"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">hanoi</span>(n, a, b, c):</span></div>
+                            <div class="code-line" id="line1"><span class="line-number">2</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> n == <span class="number">1</span>:</span></div>
+                            <div class="code-line" id="line2"><span class="line-number">3</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">print</span>(<span class="string">f"{a} -&gt; {c}"</span>)</span></div>
+                            <div class="code-line" id="line3"><span class="line-number">4</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span>:</span></div>
+                            <div class="code-line" id="line4"><span class="line-number">5</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hanoi(n-<span class="number">1</span>, a, c, b)</span></div>
+                            <div class="code-line" id="line5"><span class="line-number">6</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">print</span>(<span class="string">f"{a} -&gt; {c}"</span>)</span></div>
+                            <div class="code-line" id="line6"><span class="line-number">7</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hanoi(n-<span class="number">1</span>, b, a, c)</span></div>
+                            <div class="code-line" id="line7"><span class="line-number">8</span><span class="line-content"></span></div>
+                            <div class="code-line" id="line8"><span class="line-number">9</span><span class="line-content">hanoi(<span class="number">3</span>, <span class="string">'A'</span>, <span class="string">'B'</span>, <span class="string">'C'</span>)</span></div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title" data-i18n="panel_progress">Progress</span></div>
+                        <div class="stats-grid">
+                            <div class="stat-item"><div class="stat-value" id="currentStep">0</div><div class="stat-label" data-i18n="stat_current">Current</div></div>
+                            <div class="stat-item"><div class="stat-value" id="totalSteps">0</div><div class="stat-label" data-i18n="stat_total">Total</div></div>
+                            <div class="stat-item"><div class="stat-value" id="minSteps">7</div><div class="stat-label" data-i18n="stat_minimum">Minimum</div></div>
+                            <div class="stat-item"><div class="stat-value" id="progress">0%</div><div class="stat-label" data-i18n="stat_complete">Complete</div></div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title" data-i18n="panel_callstack">Call Stack</span>
+                            <span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-cyan);" id="stackDepth">Depth: 0</span>
+                        </div>
+                        <div class="stack-content" id="stackContent"><div class="stack-empty" data-i18n="empty_waiting">Waiting...</div></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title" data-i18n="panel_explanation">Explanation</span></div>
+                        <div class="explain-content" id="explainContent"><div class="explain-empty" data-i18n="empty_click_start">Click Start to begin</div></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title" data-i18n="panel_moves">Moves</span></div>
+                        <div class="log-content" id="logPanel"><div class="stack-empty" data-i18n="empty_no_moves">No moves yet</div></div>
                     </div>
                 </div>
-                <div class="panel">
-                    <div class="panel-header"><span class="panel-title" data-i18n="panel_progress">Progress</span></div>
-                    <div class="stats-grid">
-                        <div class="stat-item"><div class="stat-value" id="currentStep">0</div><div class="stat-label" data-i18n="stat_current">Current</div></div>
-                        <div class="stat-item"><div class="stat-value" id="totalSteps">0</div><div class="stat-label" data-i18n="stat_total">Total</div></div>
-                        <div class="stat-item"><div class="stat-value" id="minSteps">7</div><div class="stat-label" data-i18n="stat_minimum">Minimum</div></div>
-                        <div class="stat-item"><div class="stat-value" id="progress">0%</div><div class="stat-label" data-i18n="stat_complete">Complete</div></div>
+
+                <!-- ========== GAME RIGHT PANEL ========== -->
+                <div class="mode-game">
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title" data-i18n="panel_status">Status</span></div>
+                        <div class="game-stats-grid">
+                            <div class="stat-item">
+                                <div class="game-stat-value moves" id="gameMoves">0</div>
+                                <div class="stat-label" data-i18n="stat_moves">Moves</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="game-stat-value" id="gameMinMoves">7</div>
+                                <div class="stat-label" data-i18n="stat_minimum">Minimum</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="game-stat-value timer" id="gameTimer">00:00</div>
+                                <div class="stat-label" data-i18n="stat_time">Time</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" id="gameProgressFill" style="width: 0%"></div></div>
                     </div>
-                    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
-                </div>
-                <div class="panel">
-                    <div class="panel-header">
-                        <span class="panel-title" data-i18n="panel_callstack">Call Stack</span>
-                        <span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-cyan);" id="stackDepth">Depth: 0</span>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title" data-i18n="panel_rules">Rules</span></div>
+                        <div class="game-rules">
+                            <h3 data-i18n="rules_how_to_play">How to Play</h3>
+                            <ul style="list-style: none;">
+                                <li data-i18n-html="rules_goal">🎯 <strong>Goal:</strong> Move all disks from A to C</li>
+                                <li data-i18n-html="rules_click_select">👆 <strong>Click</strong> a pole to select its top disk</li>
+                                <li data-i18n-html="rules_click_place">👆 <strong>Click</strong> another pole to place it</li>
+                                <li data-i18n-html="rules_cannot_place">🚫 <strong>Cannot</strong> place a larger disk on a smaller one</li>
+                                <li data-i18n-html="rules_perfect">⭐ <strong>Perfect:</strong> Complete in 2ⁿ-1 moves</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="stack-content" id="stackContent"><div class="stack-empty" data-i18n="empty_waiting">Waiting...</div></div>
-                </div>
-                <div class="panel">
-                    <div class="panel-header"><span class="panel-title" data-i18n="panel_explanation">Explanation</span></div>
-                    <div class="explain-content" id="explainContent"><div class="explain-empty" data-i18n="empty_click_start">Click Start to begin</div></div>
-                </div>
-                <div class="panel">
-                    <div class="panel-header"><span class="panel-title" data-i18n="panel_moves">Moves</span></div>
-                    <div class="log-content" id="logPanel"><div class="stack-empty" data-i18n="empty_no_moves">No moves yet</div></div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title" data-i18n="panel_move_history">Move History</span></div>
+                        <div class="log-content" id="gameLogPanel"><div class="stack-empty" data-i18n="empty_no_moves">No moves yet</div></div>
+                    </div>
+                    <div class="panel" id="gameResultPanel" style="display: none;">
+                        <div class="game-result" id="gameResult"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- ========== GAME RIGHT PANEL ========== -->
-            <div class="mode-game">
+            <!-- ========== CPS RIGHT PANEL ========== -->
+            <div class="tool-cps">
                 <div class="panel">
-                    <div class="panel-header"><span class="panel-title" data-i18n="panel_status">Status</span></div>
-                    <div class="game-stats-grid">
+                    <div class="panel-header"><span class="panel-title" data-i18n="cps_stats">统计</span></div>
+                    <div class="cps-stats-grid">
                         <div class="stat-item">
-                            <div class="game-stat-value moves" id="gameMoves">0</div>
-                            <div class="stat-label" data-i18n="stat_moves">Moves</div>
+                            <div class="cps-stat-value" id="cpsTotalClicks">0</div>
+                            <div class="stat-label" data-i18n="cps_total_clicks">总点击数</div>
                         </div>
                         <div class="stat-item">
-                            <div class="game-stat-value" id="gameMinMoves">7</div>
-                            <div class="stat-label" data-i18n="stat_minimum">Minimum</div>
+                            <div class="cps-stat-value" id="cpsCurrent">0.0</div>
+                            <div class="stat-label" data-i18n="cps_current">当前CPS</div>
                         </div>
                         <div class="stat-item">
-                            <div class="game-stat-value timer" id="gameTimer">00:00</div>
-                            <div class="stat-label" data-i18n="stat_time">Time</div>
+                            <div class="cps-stat-value best" id="cpsBest">0.0</div>
+                            <div class="stat-label" data-i18n="cps_best">最高CPS</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="cps-stat-value timer" id="cpsTimeLeft">5.0</div>
+                            <div class="stat-label" data-i18n="cps_time_left">剩余时间</div>
                         </div>
                     </div>
-                    <div class="progress-bar"><div class="progress-fill" id="gameProgressFill" style="width: 0%"></div></div>
                 </div>
                 <div class="panel">
-                    <div class="panel-header"><span class="panel-title" data-i18n="panel_rules">Rules</span></div>
-                    <div class="game-rules">
-                        <h3 data-i18n="rules_how_to_play">How to Play</h3>
+                    <div class="panel-header"><span class="panel-title" data-i18n="cps_history">测试记录</span></div>
+                    <div class="cps-history-list" id="cpsHistoryList">
+                        <div class="stack-empty" data-i18n="empty_no_history">暂无记录</div>
+                    </div>
+                </div>
+                <div class="panel" id="cpsResultPanel" style="display: none;">
+                    <div class="cps-result-panel" id="cpsResult"></div>
+                </div>
+            </div>
+
+            <!-- ========== REACTION RIGHT PANEL ========== -->
+            <div class="tool-reaction">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="reaction_time">反应时间</span></div>
+                    <div class="reaction-stats-grid">
+                        <div class="stat-item">
+                            <div class="reaction-stat-value avg" id="reactionAvg">--</div>
+                            <div class="stat-label" data-i18n="reaction_avg">平均时间</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="reaction-stat-value best" id="reactionBest">--</div>
+                            <div class="stat-label" data-i18n="reaction_best">最快时间</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="reaction-stat-value" id="reactionCount">0</div>
+                            <div class="stat-label" data-i18n="reaction_count">测试次数</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="reaction_history">测试记录</span></div>
+                    <div class="reaction-history-list" id="reactionHistoryList">
+                        <div class="stack-empty" data-i18n="empty_no_history">暂无记录</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="reaction_tips">小贴士</span></div>
+                    <div class="reaction-tips-content">
                         <ul style="list-style: none;">
-                            <li data-i18n-html="rules_goal">🎯 <strong>Goal:</strong> Move all disks from A to C</li>
-                            <li data-i18n-html="rules_click_select">👆 <strong>Click</strong> a pole to select its top disk</li>
-                            <li data-i18n-html="rules_click_place">👆 <strong>Click</strong> another pole to place it</li>
-                            <li data-i18n-html="rules_cannot_place">🚫 <strong>Cannot</strong> place a larger disk on a smaller one</li>
-                            <li data-i18n-html="rules_perfect">⭐ <strong>Perfect:</strong> Complete in 2ⁿ-1 moves</li>
+                            <li data-i18n="reaction_tip1">保持注意力集中，不要提前点击</li>
+                            <li data-i18n="reaction_tip2">使用鼠标而不是触控板会有更好的成绩</li>
                         </ul>
                     </div>
-                </div>
-                <div class="panel">
-                    <div class="panel-header"><span class="panel-title" data-i18n="panel_move_history">Move History</span></div>
-                    <div class="log-content" id="gameLogPanel"><div class="stack-empty" data-i18n="empty_no_moves">No moves yet</div></div>
-                </div>
-                <div class="panel" id="gameResultPanel" style="display: none;">
-                    <div class="game-result" id="gameResult"></div>
                 </div>
             </div>
         </div>
@@ -741,8 +1223,11 @@
 
         const translations = {
             zh: {
-                brand_title: '汉诺塔',
-                brand_subtitle: 'Tower of Hanoi',
+                brand_title: '工具箱',
+                brand_subtitle: '多功能平台',
+                tab_hanoi: '汉诺塔',
+                tab_cps: 'CPS测试',
+                tab_reaction: '反应测试',
                 tab_demo: '演示模式',
                 tab_game: '游玩模式',
                 label_disks: '盘子',
@@ -754,7 +1239,6 @@
                 btn_reset: '重置',
                 btn_restart: '重新开始',
                 btn_tutorial: '教程视频',
-                btn_download: '下载编译器',
                 panel_code: '代码',
                 panel_progress: '进度',
                 panel_callstack: '调用栈',
@@ -772,6 +1256,7 @@
                 empty_waiting: '等待中...',
                 empty_no_moves: '暂无移动',
                 empty_click_start: '点击开始',
+                empty_no_history: '暂无记录',
                 rules_how_to_play: '如何游玩',
                 rules_goal: '🎯 <strong>目标：</strong>将所有盘子从 A 移到 C',
                 rules_click_select: '👆 <strong>点击</strong>柱子选中顶部盘子',
@@ -789,6 +1274,22 @@
                 result_good_desc: '{moves} 步，用时 {time} — 最少需要 {min} 步',
                 result_normal_desc: '{moves} 步，用时 {time} — 最少需要 {min} 步',
                 depth_label: '深度',
+                // CPS translations
+                cps_mode_5s: '5秒',
+                cps_mode_10s: '10秒',
+                cps_click_here: '点击这里',
+                cps_start: '开始',
+                cps_total_clicks: '总点击数',
+                cps_current: '当前CPS',
+                cps_best: '最高CPS',
+                cps_time_left: '剩余时间',
+                cps_history: '测试记录',
+                cps_stats: '统计',
+                cps_result: '最终成绩',
+                cps_rating_practice: '需要练习',
+                cps_rating_normal: '普通水平',
+                cps_rating_good: '优秀',
+                cps_rating_god: '大神级别',
                 // Code explanations
                 code_explain_0: '进入 <strong>hanoi</strong> 函数。参数：<strong>n</strong> = 盘子数，<strong>a</strong> = 源柱，<strong>b</strong> = 辅助柱，<strong>c</strong> = 目标柱。',
                 code_explain_1: '检查<strong>基本情况</strong>：当只剩 1 个盘子时，直接移动。这是递归终止条件。',
@@ -797,11 +1298,35 @@
                 code_explain_4: '<strong>第一步</strong>：将 <strong>n-1 个盘子</strong>从源柱移到辅助柱。',
                 code_explain_5: '<strong>第二步</strong>：将<strong>底部盘子</strong>移到目标柱。',
                 code_explain_6: '<strong>第三步</strong>：将 <strong>n-1 个盘子</strong>从辅助柱移到目标柱。',
-                code_explain_8: '<strong>主入口</strong>：开始解决 3 盘汉诺塔。'
+                code_explain_8: '<strong>主入口</strong>：开始解决 3 盘汉诺塔。',
+                // Reaction translations
+                reaction_delay: '延迟时间',
+                reaction_color: '目标颜色',
+                reaction_start: '开始测试',
+                reaction_waiting: '等待变色...',
+                reaction_click_now: '点击！',
+                reaction_too_early: '太早了！',
+                reaction_time: '反应时间',
+                reaction_avg: '平均时间',
+                reaction_best: '最快时间',
+                reaction_count: '测试次数',
+                reaction_history: '测试记录',
+                reaction_tips: '小贴士',
+                reaction_tip1: '保持注意力集中，不要提前点击',
+                reaction_tip2: '使用鼠标而不是触控板会有更好的成绩',
+                reaction_rating_god: '大神级别',
+                reaction_rating_excellent: '优秀',
+                reaction_rating_normal: '普通水平',
+                reaction_rating_practice: '需要练习',
+                reaction_click_start: '点击开始',
+                reaction_ms: 'ms'
             },
             en: {
-                brand_title: 'Tower of Hanoi',
-                brand_subtitle: 'Tower of Hanoi',
+                brand_title: 'Toolbox',
+                brand_subtitle: 'Multi-Tool Platform',
+                tab_hanoi: 'Tower of Hanoi',
+                tab_cps: 'CPS Test',
+                tab_reaction: 'Reaction Test',
                 tab_demo: 'Demo Mode',
                 tab_game: 'Play Mode',
                 label_disks: 'Disks',
@@ -813,7 +1338,6 @@
                 btn_reset: 'Reset',
                 btn_restart: 'Restart',
                 btn_tutorial: 'Tutorial',
-                btn_download: 'Compiler Download',
                 panel_code: 'Code',
                 panel_progress: 'Progress',
                 panel_callstack: 'Call Stack',
@@ -831,6 +1355,7 @@
                 empty_waiting: 'Waiting...',
                 empty_no_moves: 'No moves yet',
                 empty_click_start: 'Click Start to begin',
+                empty_no_history: 'No history',
                 rules_how_to_play: 'How to Play',
                 rules_goal: '🎯 <strong>Goal:</strong> Move all disks from A to C',
                 rules_click_select: '👆 <strong>Click</strong> a pole to select its top disk',
@@ -848,6 +1373,21 @@
                 result_good_desc: '{moves} moves in {time} — minimum is {min}',
                 result_normal_desc: '{moves} moves in {time} — minimum is {min}',
                 depth_label: 'Depth',
+                cps_mode_5s: '5s',
+                cps_mode_10s: '10s',
+                cps_click_here: 'Click Here',
+                cps_start: 'Start',
+                cps_total_clicks: 'Total Clicks',
+                cps_current: 'Current CPS',
+                cps_best: 'Best CPS',
+                cps_time_left: 'Time Left',
+                cps_history: 'Test History',
+                cps_stats: 'Stats',
+                cps_result: 'Final Result',
+                cps_rating_practice: 'Needs Practice',
+                cps_rating_normal: 'Normal',
+                cps_rating_good: 'Excellent',
+                cps_rating_god: 'God Level',
                 code_explain_0: 'Enter the <strong>hanoi</strong> function. Parameters: <strong>n</strong> = disk count, <strong>a</strong> = source, <strong>b</strong> = auxiliary, <strong>c</strong> = target.',
                 code_explain_1: 'Check <strong>base case</strong>: when only 1 disk remains, move it directly. This is the recursion termination.',
                 code_explain_2: 'Execute <strong>direct move</strong>: move the only disk from source to target.',
@@ -855,11 +1395,35 @@
                 code_explain_4: '<strong>Step 1</strong>: Move <strong>n-1 disks</strong> from source to auxiliary.',
                 code_explain_5: '<strong>Step 2</strong>: Move the <strong>bottom disk</strong> to target.',
                 code_explain_6: '<strong>Step 3</strong>: Move <strong>n-1 disks</strong> from auxiliary to target.',
-                code_explain_8: '<strong>Main entry</strong>: Start solving 3-disk Tower of Hanoi.'
+                code_explain_8: '<strong>Main entry</strong>: Start solving 3-disk Tower of Hanoi.',
+                // Reaction translations
+                reaction_delay: 'Delay',
+                reaction_color: 'Target Color',
+                reaction_start: 'Start Test',
+                reaction_waiting: 'Wait for color...',
+                reaction_click_now: 'Click Now!',
+                reaction_too_early: 'Too Early!',
+                reaction_time: 'Reaction Time',
+                reaction_avg: 'Average',
+                reaction_best: 'Best Time',
+                reaction_count: 'Tests',
+                reaction_history: 'History',
+                reaction_tips: 'Tips',
+                reaction_tip1: 'Stay focused, don\'t click early',
+                reaction_tip2: 'Use a mouse instead of trackpad for better results',
+                reaction_rating_god: 'God Level',
+                reaction_rating_excellent: 'Excellent',
+                reaction_rating_normal: 'Normal',
+                reaction_rating_practice: 'Needs Practice',
+                reaction_click_start: 'Click to Start',
+                reaction_ms: 'ms'
             },
             ru: {
-                brand_title: 'Ханойская башня',
-                brand_subtitle: 'Tower of Hanoi',
+                brand_title: 'Инструменты',
+                brand_subtitle: 'Мульти-платформа',
+                tab_hanoi: 'Ханойская башня',
+                tab_cps: 'CPS Тест',
+                tab_reaction: 'Тест реакции',
                 tab_demo: 'Демонстрация',
                 tab_game: 'Игра',
                 label_disks: 'Диски',
@@ -871,7 +1435,6 @@
                 btn_reset: 'Сброс',
                 btn_restart: 'Заново',
                 btn_tutorial: 'Видеоурок',
-                btn_download: 'Скачать компилятор',
                 panel_code: 'Код',
                 panel_progress: 'Прогресс',
                 panel_callstack: 'Стек вызовов',
@@ -889,6 +1452,7 @@
                 empty_waiting: 'Ожидание...',
                 empty_no_moves: 'Ходов пока нет',
                 empty_click_start: 'Нажмите Старт для начала',
+                empty_no_history: 'Нет истории',
                 rules_how_to_play: 'Как играть',
                 rules_goal: '🎯 <strong>Цель:</strong> Переместить все диски с A на C',
                 rules_click_select: '👆 <strong>Нажмите</strong> на столб, чтобы выбрать верхний диск',
@@ -906,6 +1470,21 @@
                 result_good_desc: '{moves} ходов за {time} — минимум: {min}',
                 result_normal_desc: '{moves} ходов за {time} — минимум: {min}',
                 depth_label: 'Глубина',
+                cps_mode_5s: '5сек',
+                cps_mode_10s: '10сек',
+                cps_click_here: 'Нажмите здесь',
+                cps_start: 'Начать',
+                cps_total_clicks: 'Всего кликов',
+                cps_current: 'Текущий CPS',
+                cps_best: 'Лучший CPS',
+                cps_time_left: 'Осталось времени',
+                cps_history: 'История тестов',
+                cps_stats: 'Статистика',
+                cps_result: 'Результат',
+                cps_rating_practice: 'Нужна практика',
+                cps_rating_normal: 'Нормально',
+                cps_rating_good: 'Отлично',
+                cps_rating_god: 'Мастер',
                 code_explain_0: 'Вход в функцию <strong>hanoi</strong>. Параметры: <strong>n</strong> — количество дисков, <strong>a</strong> — исходный столб, <strong>b</strong> — вспомогательный, <strong>c</strong> — целевой.',
                 code_explain_1: 'Проверка <strong>базового случая</strong>: когда остаётся 1 диск, перемещаем его напрямую. Это условие завершения рекурсии.',
                 code_explain_2: 'Выполнение <strong>прямого перемещения</strong>: перемещаем единственный диск с исходного столба на целевой.',
@@ -913,11 +1492,35 @@
                 code_explain_4: '<strong>Шаг 1</strong>: Перемещаем <strong>n-1 дисков</strong> с исходного столба на вспомогательный.',
                 code_explain_5: '<strong>Шаг 2</strong>: Перемещаем <strong>нижний диск</strong> на целевой столб.',
                 code_explain_6: '<strong>Шаг 3</strong>: Перемещаем <strong>n-1 дисков</strong> со вспомогательного столба на целевой.',
-                code_explain_8: '<strong>Главная точка входа</strong>: Начинаем решение Ханойской башни с 3 дисками.'
+                code_explain_8: '<strong>Главная точка входа</strong>: Начинаем решение Ханойской башни с 3 дисками.',
+                // Reaction translations
+                reaction_delay: 'Задержка',
+                reaction_color: 'Целевой цвет',
+                reaction_start: 'Начать тест',
+                reaction_waiting: 'Ожидание цвета...',
+                reaction_click_now: 'Нажмите!',
+                reaction_too_early: 'Слишком рано!',
+                reaction_time: 'Время реакции',
+                reaction_avg: 'Среднее',
+                reaction_best: 'Лучшее',
+                reaction_count: 'Тестов',
+                reaction_history: 'История',
+                reaction_tips: 'Советы',
+                reaction_tip1: 'Сохраняйте концентрацию, не нажимайте слишком рано',
+                reaction_tip2: 'Используйте мышь вместо тачпада для лучших результатов',
+                reaction_rating_god: 'Мастер',
+                reaction_rating_excellent: 'Отлично',
+                reaction_rating_normal: 'Нормально',
+                reaction_rating_practice: 'Нужна практика',
+                reaction_click_start: 'Нажмите для начала',
+                reaction_ms: 'мс'
             },
             ja: {
-                brand_title: 'ハノイの塔',
-                brand_subtitle: 'Tower of Hanoi',
+                brand_title: '工具箱',
+                brand_subtitle: 'マルチツール',
+                tab_hanoi: 'ハノイの塔',
+                tab_cps: 'CPSテスト',
+                tab_reaction: '反応テスト',
                 tab_demo: 'デモモード',
                 tab_game: 'プレイモード',
                 label_disks: 'ディスク',
@@ -929,7 +1532,6 @@
                 btn_reset: 'リセット',
                 btn_restart: 'リスタート',
                 btn_tutorial: 'チュートリアル動画',
-                btn_download: 'コンパイラーダウンロード',
                 panel_code: 'コード',
                 panel_progress: '進捗',
                 panel_callstack: 'コールスタック',
@@ -947,6 +1549,7 @@
                 empty_waiting: '待機中...',
                 empty_no_moves: 'まだ移動していません',
                 empty_click_start: '開始をクリックしてください',
+                empty_no_history: '履歴なし',
                 rules_how_to_play: '遊び方',
                 rules_goal: '🎯 <strong>目標：</strong>すべてのディスクを A から C に移動する',
                 rules_click_select: '👆 <strong>クリック</strong>してポールの一番上のディスクを選択',
@@ -964,6 +1567,21 @@
                 result_good_desc: '{time} で {moves} 手 — 最小は {min} 手',
                 result_normal_desc: '{time} で {moves} 手 — 最小は {min} 手',
                 depth_label: '深さ',
+                cps_mode_5s: '5秒',
+                cps_mode_10s: '10秒',
+                cps_click_here: 'ここをクリック',
+                cps_start: '開始',
+                cps_total_clicks: '総クリック数',
+                cps_current: '現在のCPS',
+                cps_best: '最高CPS',
+                cps_time_left: '残り時間',
+                cps_history: 'テスト履歴',
+                cps_stats: '統計',
+                cps_result: '最終結果',
+                cps_rating_practice: '練習が必要',
+                cps_rating_normal: '普通',
+                cps_rating_good: '優秀',
+                cps_rating_god: '神レベル',
                 code_explain_0: '<strong>hanoi</strong> 関数に入ります。パラメータ：<strong>n</strong> = ディスク数、<strong>a</strong> = 元のポール、<strong>b</strong> = 補助ポール、<strong>c</strong> = 目標ポール。',
                 code_explain_1: '<strong>ベースケース</strong>の確認：ディスクが1枚だけの場合、直接移動します。これが再帰の終了条件です。',
                 code_explain_2: '<strong>直接移動</strong>の実行：唯一のディスクを元のポールから目標ポールへ移動します。',
@@ -971,7 +1589,28 @@
                 code_explain_4: '<strong>ステップ1</strong>：<strong>n-1枚のディスク</strong>を元のポールから補助ポールへ移動します。',
                 code_explain_5: '<strong>ステップ2</strong>：<strong>一番下のディスク</strong>を目標ポールへ移動します。',
                 code_explain_6: '<strong>ステップ3</strong>：<strong>n-1枚のディスク</strong>を補助ポールから目標ポールへ移動します。',
-                code_explain_8: '<strong>メインエントリ</strong>：3枚のハノイの塔の解決を開始します。'
+                code_explain_8: '<strong>メインエントリ</strong>：3枚のハノイの塔の解決を開始します。',
+                // Reaction translations
+                reaction_delay: '遅延時間',
+                reaction_color: '目標カラー',
+                reaction_start: 'テスト開始',
+                reaction_waiting: '色が変わるのを待って...',
+                reaction_click_now: 'クリック！',
+                reaction_too_early: '早すぎます！',
+                reaction_time: '反応時間',
+                reaction_avg: '平均',
+                reaction_best: '最速',
+                reaction_count: 'テスト回数',
+                reaction_history: 'テスト履歴',
+                reaction_tips: 'ヒント',
+                reaction_tip1: '集中力を保ち、早くクリックしすぎないようにしましょう',
+                reaction_tip2: 'トラックパッドではなくマウスを使用するとより良い結果が得られます',
+                reaction_rating_god: '神レベル',
+                reaction_rating_excellent: '優秀',
+                reaction_rating_normal: '普通',
+                reaction_rating_practice: '練習が必要',
+                reaction_click_start: 'クリックして開始',
+                reaction_ms: 'ms'
             }
         };
 
@@ -992,7 +1631,7 @@
         function setLanguage(lang) {
             if (!translations[lang]) return;
             currentLang = lang;
-            localStorage.setItem('hanoi_lang', lang);
+            localStorage.setItem('toolbox_lang', lang);
 
             // Update dropdown
             document.getElementById('langSelect').value = lang;
@@ -1028,6 +1667,48 @@
             if (demoLogEmpty) demoLogEmpty.textContent = t('empty_no_moves');
             const gameLogEmpty = document.querySelector('#gameLogPanel .stack-empty');
             if (gameLogEmpty) gameLogEmpty.textContent = t('empty_no_moves');
+            // CPS history empty
+            const cpsHistoryEmpty = document.querySelector('#cpsHistoryList .stack-empty');
+            if (cpsHistoryEmpty) cpsHistoryEmpty.textContent = t('empty_no_history');
+            // Reaction history empty
+            const reactionHistoryEmpty = document.querySelector('#reactionHistoryList .stack-empty');
+            if (reactionHistoryEmpty) reactionHistoryEmpty.textContent = t('empty_no_history');
+            
+            // Re-render CPS result if visible
+            const cpsResultPanel = document.getElementById('cpsResultPanel');
+            if (cpsResultPanel && cpsResultPanel.style.display !== 'none') {
+                const lastResult = cpsState.history[0];
+                if (lastResult) {
+                    const cps = parseFloat(lastResult.cps);
+                    let ratingClass, ratingText;
+                    if (cps < 5) { ratingClass = 'practice'; ratingText = t('cps_rating_practice'); }
+                    else if (cps < 8) { ratingClass = 'normal'; ratingText = t('cps_rating_normal'); }
+                    else if (cps < 10) { ratingClass = 'good'; ratingText = t('cps_rating_good'); }
+                    else { ratingClass = 'god'; ratingText = t('cps_rating_god'); }
+                    document.getElementById('cpsResult').innerHTML = `
+                        <div class="cps-result-cps">${cps.toFixed(1)}</div>
+                        <div class="cps-result-rating ${ratingClass}">${ratingText}</div>
+                    `;
+                }
+            }
+            // Re-render CPS history
+            renderCPSHistory();
+            
+            // Re-render reaction result if visible
+            const reactionArea = document.getElementById('reactionArea');
+            if (reactionArea && reactionArea.classList.contains('result')) {
+                const lastResult = reactionState.history[0];
+                if (lastResult) {
+                    const rating = getRatingInfo(lastResult.rating);
+                    document.getElementById('reactionAreaText').innerHTML = `
+                        <div class="reaction-time">${lastResult.time}<span style="font-size: 1.5rem; margin-left: 4px;">${t('reaction_ms')}</span></div>
+                        <div class="reaction-rating ${rating.cls}">${rating.text}</div>
+                        <div class="reaction-sub-text">${t('reaction_click_start')}</div>
+                    `;
+                }
+            }
+            // Re-render reaction history
+            renderReactionHistory();
         }
 
         function updateCodeExplanations() {
@@ -1039,6 +1720,46 @@
             codeExplanations[5].text = t('code_explain_5');
             codeExplanations[6].text = t('code_explain_6');
             codeExplanations[8].text = t('code_explain_8');
+        }
+
+        // ==================== TOOL SWITCH ====================
+        let currentTool = 'hanoi';
+
+        function switchTool(tool) {
+            if (tool === currentTool) return;
+
+            // Stop demo if running
+            if (isRunning) { pauseAutoPlay(); }
+
+            currentTool = tool;
+            document.body.classList.toggle('cps-active', tool === 'cps');
+            document.body.classList.toggle('reaction-active', tool === 'reaction');
+            document.body.classList.remove('game-active');
+
+            // Update top-level tabs
+            document.querySelectorAll('.tab-bar .tab-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (i === 0 && tool === 'hanoi') || (i === 1 && tool === 'cps') || (i === 2 && tool === 'reaction'));
+            });
+
+            // Show/hide tutorial button
+            document.querySelectorAll('.hanoi-only').forEach(el => {
+                el.style.display = tool === 'hanoi' ? 'flex' : 'none';
+            });
+
+            if (tool === 'hanoi') {
+                currentMode = 'demo';
+                initTower();
+                // Set pole clickability
+                document.querySelectorAll('.pole-wrapper').forEach(w => {
+                    w.classList.remove('clickable');
+                });
+            } else if (tool === 'cps') {
+                // Reset CPS
+                cpsReset();
+            } else if (tool === 'reaction') {
+                // Reset reaction
+                resetReactionUI();
+            }
         }
 
         // ==================== SHARED ====================
@@ -1072,7 +1793,7 @@
             t.appendChild(d);
         }
 
-        // ==================== MODE SWITCH ====================
+        // ==================== MODE SWITCH (Hanoi) ====================
         function switchMode(mode) {
             if (mode === currentMode) return;
 
@@ -1082,9 +1803,16 @@
             currentMode = mode;
             document.body.classList.toggle('game-active', mode === 'game');
 
-            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-                btn.classList.toggle('active', (i === 0 && mode === 'demo') || (i === 1 && mode === 'game'));
-            });
+            // Update sub-tabs - only update the specific button, not all buttons in the container
+            const demoBtn1 = document.querySelector('.mode-demo .sub-tab-btn:nth-child(1)');
+            const demoBtn2 = document.querySelector('.mode-demo .sub-tab-btn:nth-child(2)');
+            const gameBtn1 = document.querySelector('.mode-game .sub-tab-btn:nth-child(1)');
+            const gameBtn2 = document.querySelector('.mode-game .sub-tab-btn:nth-child(2)');
+            
+            if (demoBtn1) demoBtn1.classList.toggle('active', mode === 'demo');
+            if (demoBtn2) demoBtn2.classList.toggle('active', mode === 'game');
+            if (gameBtn1) gameBtn1.classList.toggle('active', mode === 'demo');
+            if (gameBtn2) gameBtn2.classList.toggle('active', mode === 'game');
 
             // Set pole clickability
             document.querySelectorAll('.pole-wrapper').forEach(w => {
@@ -1118,7 +1846,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize language
-            const savedLang = localStorage.getItem('hanoi_lang') || 'zh';
+            const savedLang = localStorage.getItem('toolbox_lang') || 'zh';
             currentLang = savedLang;
             document.getElementById('langSelect').value = savedLang;
             updateCodeExplanations();
@@ -1140,6 +1868,10 @@
             initTower();
             setupDemoListeners();
             setupGameListeners();
+            setupCPSListeners();
+            loadCPSHistory();
+            setupReactionListeners();
+            loadReactionHistory();
         });
 
         function setupDemoListeners() {
@@ -1470,7 +2202,7 @@
 
                 // Update UI
                 document.getElementById('gameMoves').textContent = gameState.moves;
-                const minMoves = Math.pow(gameState.diskNum, 2) - 1;
+                const minMoves = Math.pow(2, gameState.diskNum) - 1;
                 const pct = Math.min(100, Math.round((gameState.moves / (minMoves * 1.5)) * 100));
                 document.getElementById('gameProgressFill').style.width = pct + '%';
 
@@ -1513,7 +2245,7 @@
             gameState.isComplete = true;
             if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; }
 
-            const minMoves = Math.pow(gameState.diskNum, 2) - 1;
+            const minMoves = Math.pow(2, gameState.diskNum) - 1;
             const moves = gameState.moves;
             const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
             const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
@@ -1543,6 +2275,474 @@
             // Celebrate animation
             document.querySelectorAll('.pole-wrapper').forEach(w => w.classList.add('celebrate'));
             setTimeout(() => document.querySelectorAll('.pole-wrapper').forEach(w => w.classList.remove('celebrate')), 1500);
+        }
+
+        // ==================== CPS MODULE ====================
+        let cpsState = {
+            mode: '5s',
+            clicks: 0,
+            startTime: null,
+            timerInterval: null,
+            isRunning: false,
+            history: []
+        };
+
+        function setupCPSListeners() {
+            document.getElementById('cpsClickArea').addEventListener('click', handleCPSClick);
+        }
+
+        function switchCPSMode(mode) {
+            if (cpsState.isRunning) return;
+            cpsState.mode = mode;
+            
+            // Update sub-tabs
+            document.querySelectorAll('.tool-cps .sub-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-i18n') === (mode === '5s' ? 'cps_mode_5s' : 'cps_mode_10s'));
+            });
+            
+            // Update time display
+            const duration = mode === '5s' ? 5 : 10;
+            document.getElementById('cpsTimeLeft').textContent = duration.toFixed(1);
+            document.getElementById('cpsTimerDisplay').textContent = duration.toFixed(1);
+        }
+
+        function startCPS() {
+            if (cpsState.isRunning) return;
+            
+            cpsState.isRunning = true;
+            cpsState.clicks = 0;
+            cpsState.startTime = Date.now();
+            
+            // Enable click area
+            const clickArea = document.getElementById('cpsClickArea');
+            clickArea.classList.remove('disabled');
+            clickArea.textContent = t('cps_click_here');
+            
+            // Disable start button
+            document.getElementById('cpsStartBtn').disabled = true;
+            
+            // Hide result panel
+            document.getElementById('cpsResultPanel').style.display = 'none';
+            
+            // Reset displays
+            document.getElementById('cpsTotalClicks').textContent = '0';
+            document.getElementById('cpsCurrent').textContent = '0.0';
+            
+            // Start timer
+            const duration = cpsState.mode === '5s' ? 5 : 10;
+            cpsState.timerInterval = setInterval(() => {
+                const elapsed = (Date.now() - cpsState.startTime) / 1000;
+                const remaining = Math.max(0, duration - elapsed);
+                
+                document.getElementById('cpsTimeLeft').textContent = remaining.toFixed(1);
+                document.getElementById('cpsTimerDisplay').textContent = remaining.toFixed(1);
+                
+                // Update CPS
+                if (elapsed > 0) {
+                    const cps = cpsState.clicks / elapsed;
+                    document.getElementById('cpsCurrent').textContent = cps.toFixed(1);
+                    document.getElementById('cpsRealtime').textContent = `CPS: ${cps.toFixed(1)}`;
+                }
+                
+                if (remaining <= 0) {
+                    endCPS();
+                }
+            }, 50);
+        }
+
+        function handleCPSClick() {
+            if (!cpsState.isRunning) return;
+            
+            cpsState.clicks++;
+            document.getElementById('cpsTotalClicks').textContent = cpsState.clicks;
+            
+            // Visual feedback
+            const clickArea = document.getElementById('cpsClickArea');
+            clickArea.style.transform = 'scale(0.95)';
+            setTimeout(() => clickArea.style.transform = '', 50);
+        }
+
+        function endCPS() {
+            cpsState.isRunning = false;
+            
+            if (cpsState.timerInterval) {
+                clearInterval(cpsState.timerInterval);
+                cpsState.timerInterval = null;
+            }
+            
+            const elapsed = (Date.now() - cpsState.startTime) / 1000;
+            const finalCPS = cpsState.clicks / Math.max(elapsed, 0.01);
+            
+            // Disable click area
+            const clickArea = document.getElementById('cpsClickArea');
+            clickArea.classList.add('disabled');
+            clickArea.textContent = t('cps_click_here');
+            
+            // Enable start button
+            document.getElementById('cpsStartBtn').disabled = false;
+            
+            // Update displays
+            document.getElementById('cpsCurrent').textContent = finalCPS.toFixed(1);
+            document.getElementById('cpsRealtime').textContent = `CPS: ${finalCPS.toFixed(1)}`;
+            document.getElementById('cpsTimeLeft').textContent = '0.0';
+            document.getElementById('cpsTimerDisplay').textContent = '0.0';
+            
+            // Update best CPS (per mode)
+            const bestKey = `cps_best_${cpsState.mode}`;
+            const currentBest = parseFloat(localStorage.getItem(bestKey) || '0');
+            if (finalCPS > currentBest) {
+                localStorage.setItem(bestKey, finalCPS.toFixed(1));
+            }
+            // Display best for current mode
+            const displayBest = parseFloat(localStorage.getItem(bestKey) || '0');
+            document.getElementById('cpsBest').textContent = displayBest > 0 ? displayBest.toFixed(1) : '-';
+            
+            // Get rating
+            let ratingClass, ratingText;
+            if (finalCPS < 5) {
+                ratingClass = 'cps-rating-practice';
+                ratingText = t('cps_rating_practice');
+            } else if (finalCPS < 8) {
+                ratingClass = 'cps-rating-normal';
+                ratingText = t('cps_rating_normal');
+            } else if (finalCPS < 10) {
+                ratingClass = 'cps-rating-good';
+                ratingText = t('cps_rating_good');
+            } else {
+                ratingClass = 'cps-rating-god';
+                ratingText = t('cps_rating_god');
+            }
+            
+            // Show result
+            document.getElementById('cpsResultPanel').style.display = 'block';
+            document.getElementById('cpsResult').innerHTML = `
+                <div class="cps-result-cps">${finalCPS.toFixed(1)}</div>
+                <div class="cps-result-rating ${ratingClass}">${ratingText}</div>
+            `;
+            
+            // Save to history
+            saveToHistory(finalCPS, cpsState.mode);
+        }
+
+        function saveToHistory(cps, mode) {
+            cpsState.history.unshift({ cps: cps.toFixed(1), mode, time: new Date().toLocaleTimeString() });
+            if (cpsState.history.length > 5) cpsState.history.pop();
+            
+            localStorage.setItem('cps_history', JSON.stringify(cpsState.history));
+            renderCPSHistory();
+        }
+
+        function loadCPSHistory() {
+            const saved = localStorage.getItem('cps_history');
+            if (saved) {
+                cpsState.history = JSON.parse(saved);
+            }
+            
+            const best = localStorage.getItem(`cps_best_${cpsState.mode}`);
+            if (best) {
+                document.getElementById('cpsBest').textContent = best;
+            } else {
+                document.getElementById('cpsBest').textContent = '-';
+            }
+            
+            renderCPSHistory();
+        }
+
+        function renderCPSHistory() {
+            const list = document.getElementById('cpsHistoryList');
+            if (cpsState.history.length === 0) {
+                list.innerHTML = `<div class="stack-empty">${t('empty_no_history')}</div>`;
+                return;
+            }
+            
+            list.innerHTML = cpsState.history.map(item => `
+                <div class="cps-history-item">
+                    <span class="cps-history-cps">${item.cps} CPS</span>
+                    <span class="cps-history-mode">${item.mode} | ${item.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function cpsReset() {
+            if (cpsState.timerInterval) {
+                clearInterval(cpsState.timerInterval);
+                cpsState.timerInterval = null;
+            }
+            
+            cpsState.isRunning = false;
+            cpsState.clicks = 0;
+            cpsState.startTime = null;
+            cpsState.mode = '5s';
+            
+            // Reset UI
+            document.getElementById('cpsClickArea').classList.add('disabled');
+            document.getElementById('cpsClickArea').textContent = t('cps_click_here');
+            document.getElementById('cpsStartBtn').disabled = false;
+            document.getElementById('cpsTotalClicks').textContent = '0';
+            document.getElementById('cpsCurrent').textContent = '0.0';
+            document.getElementById('cpsTimeLeft').textContent = '5.0';
+            document.getElementById('cpsTimerDisplay').textContent = '5.0';
+            document.getElementById('cpsRealtime').textContent = 'CPS: 0.0';
+            document.getElementById('cpsResultPanel').style.display = 'none';
+            
+            // Reset sub-tabs
+            document.querySelectorAll('.tool-cps .sub-tab-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === 0);
+            });
+            
+            loadCPSHistory();
+        }
+
+        // ==================== REACTION MODULE ====================
+        let reactionState = {
+            delay: 3,
+            targetColor: '#3fb950',
+            isRunning: false,
+            isWaiting: false,
+            startTime: null,
+            timeoutId: null,
+            history: [],
+            testCount: 0,
+            bestTime: Infinity,
+            totalTime: 0
+        };
+
+        function setupReactionListeners() {
+            const delayInput = document.getElementById('reactionDelayInput');
+            delayInput.addEventListener('input', (e) => {
+                reactionState.delay = parseInt(e.target.value);
+                document.getElementById('reactionDelayValue').textContent = reactionState.delay + 's';
+            });
+
+            const colorInput = document.getElementById('reactionColorInput');
+            colorInput.addEventListener('input', (e) => {
+                reactionState.targetColor = e.target.value;
+            });
+        }
+
+        function startReactionTest() {
+            if (reactionState.isRunning) return;
+
+            reactionState.isRunning = true;
+            reactionState.isWaiting = true;
+
+            const area = document.getElementById('reactionArea');
+            const text = document.getElementById('reactionAreaText');
+
+            // Set waiting state
+            area.className = 'reaction-area waiting';
+            area.style.backgroundColor = '';
+            text.textContent = t('reaction_waiting');
+
+            // Disable start button
+            document.getElementById('reactionStartBtn').disabled = true;
+
+            // Random delay: user-set delay +/- 1 second
+            const minDelay = Math.max(1, reactionState.delay - 1);
+            const maxDelay = reactionState.delay + 1;
+            const randomDelay = (Math.random() * (maxDelay - minDelay) + minDelay) * 1000;
+
+            reactionState.timeoutId = setTimeout(() => {
+                // Change to ready state
+                reactionState.isWaiting = false;
+                reactionState.startTime = performance.now();
+
+                area.className = 'reaction-area ready';
+                area.style.backgroundColor = reactionState.targetColor;
+                // Update glow color based on target color
+                const glowColor = reactionState.targetColor;
+                area.style.boxShadow = `0 0 40px ${glowColor}66, 0 0 80px ${glowColor}33`;
+                text.textContent = t('reaction_click_now');
+            }, randomDelay);
+        }
+
+        function handleReactionClick() {
+            if (!reactionState.isRunning) return;
+
+            const area = document.getElementById('reactionArea');
+            const text = document.getElementById('reactionAreaText');
+
+            if (reactionState.isWaiting) {
+                // Clicked too early
+                clearTimeout(reactionState.timeoutId);
+                reactionState.isRunning = false;
+                reactionState.isWaiting = false;
+
+                area.className = 'reaction-area too-early';
+                area.style.backgroundColor = '';
+                area.style.boxShadow = '';
+                text.textContent = t('reaction_too_early');
+
+                document.getElementById('reactionStartBtn').disabled = false;
+
+                // Reset after a delay
+                setTimeout(() => {
+                    if (!reactionState.isRunning) {
+                        resetReactionArea();
+                    }
+                }, 1500);
+            } else if (reactionState.startTime !== null) {
+                // Calculate reaction time
+                const reactionTime = Math.round(performance.now() - reactionState.startTime);
+                reactionState.isRunning = false;
+                reactionState.startTime = null;
+
+                showReactionResult(reactionTime);
+            }
+        }
+
+        function showReactionResult(timeMs) {
+            const area = document.getElementById('reactionArea');
+            const text = document.getElementById('reactionAreaText');
+
+            area.className = 'reaction-area result';
+            area.style.backgroundColor = '';
+            area.style.boxShadow = '';
+
+            const rating = getReactionRating(timeMs);
+
+            text.innerHTML = `
+                <div class="reaction-time">${timeMs}<span style="font-size: 1.5rem; margin-left: 4px;">${t('reaction_ms')}</span></div>
+                <div class="reaction-rating ${rating.cls}">${rating.text}</div>
+                <div class="reaction-sub-text">${t('reaction_click_start')}</div>
+            `;
+
+            // Update stats
+            reactionState.testCount++;
+            reactionState.totalTime += timeMs;
+            if (timeMs < reactionState.bestTime) {
+                reactionState.bestTime = timeMs;
+            }
+
+            // Save to history
+            reactionState.history.unshift({
+                time: timeMs,
+                rating: rating.key,
+                date: new Date().toLocaleTimeString()
+            });
+            if (reactionState.history.length > 10) {
+                reactionState.history.pop();
+            }
+
+            updateReactionStats();
+            saveReactionHistory();
+            renderReactionHistory();
+
+            document.getElementById('reactionStartBtn').disabled = false;
+        }
+
+        function getReactionRating(ms) {
+            if (ms < 200) {
+                return { key: 'god', text: t('reaction_rating_god'), cls: 'god' };
+            } else if (ms < 300) {
+                return { key: 'excellent', text: t('reaction_rating_excellent'), cls: 'excellent' };
+            } else if (ms < 500) {
+                return { key: 'normal', text: t('reaction_rating_normal'), cls: 'normal' };
+            } else {
+                return { key: 'practice', text: t('reaction_rating_practice'), cls: 'practice' };
+            }
+        }
+
+        function updateReactionStats() {
+            const avgEl = document.getElementById('reactionAvg');
+            const bestEl = document.getElementById('reactionBest');
+            const countEl = document.getElementById('reactionCount');
+
+            if (reactionState.testCount > 0) {
+                const avg = Math.round(reactionState.totalTime / reactionState.testCount);
+                avgEl.textContent = avg + ' ' + t('reaction_ms');
+            } else {
+                avgEl.textContent = '--';
+            }
+
+            if (reactionState.bestTime < Infinity) {
+                bestEl.textContent = reactionState.bestTime + ' ' + t('reaction_ms');
+            } else {
+                bestEl.textContent = '--';
+            }
+
+            countEl.textContent = reactionState.testCount;
+        }
+
+        function saveReactionHistory() {
+            const data = {
+                history: reactionState.history,
+                testCount: reactionState.testCount,
+                bestTime: reactionState.bestTime,
+                totalTime: reactionState.totalTime
+            };
+            localStorage.setItem('toolbox_reaction_history', JSON.stringify(data));
+        }
+
+        function loadReactionHistory() {
+            const saved = localStorage.getItem('toolbox_reaction_history');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    reactionState.history = data.history || [];
+                    reactionState.testCount = data.testCount || 0;
+                    reactionState.bestTime = data.bestTime || Infinity;
+                    reactionState.totalTime = data.totalTime || 0;
+                } catch (e) {
+                    // Invalid data, ignore
+                }
+            }
+            updateReactionStats();
+            renderReactionHistory();
+        }
+
+        function renderReactionHistory() {
+            const list = document.getElementById('reactionHistoryList');
+            if (reactionState.history.length === 0) {
+                list.innerHTML = `<div class="stack-empty">${t('empty_no_history')}</div>`;
+                return;
+            }
+
+            list.innerHTML = reactionState.history.map(item => {
+                const rating = getRatingInfo(item.rating);
+                return `
+                    <div class="reaction-history-item">
+                        <span class="reaction-history-time">${item.time} ${t('reaction_ms')}</span>
+                        <span class="reaction-history-rating ${rating.cls}">${rating.text}</span>
+                        <span class="reaction-history-date">${item.date}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getRatingInfo(key) {
+            switch (key) {
+                case 'god': return { text: t('reaction_rating_god'), cls: 'god' };
+                case 'excellent': return { text: t('reaction_rating_excellent'), cls: 'excellent' };
+                case 'normal': return { text: t('reaction_rating_normal'), cls: 'normal' };
+                case 'practice': return { text: t('reaction_rating_practice'), cls: 'practice' };
+                default: return { text: '', cls: '' };
+            }
+        }
+
+        function resetReactionArea() {
+            const area = document.getElementById('reactionArea');
+            const text = document.getElementById('reactionAreaText');
+            area.className = 'reaction-area';
+            area.style.backgroundColor = '';
+            area.style.boxShadow = '';
+            text.textContent = t('reaction_click_start');
+        }
+
+        function resetReactionUI() {
+            // Cancel any running test
+            if (reactionState.timeoutId) {
+                clearTimeout(reactionState.timeoutId);
+                reactionState.timeoutId = null;
+            }
+            reactionState.isRunning = false;
+            reactionState.isWaiting = false;
+            reactionState.startTime = null;
+
+            document.getElementById('reactionStartBtn').disabled = false;
+            resetReactionArea();
+            updateReactionStats();
+            renderReactionHistory();
         }
     </script>
 </body>
