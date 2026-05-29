@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉诺塔 | Tower of Hanoi</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-cyan: #58a6ff;
+            --accent-purple: #a371f7;
+            --accent-green: #3fb950;
+            --accent-orange: #f0883e;
+            --accent-pink: #f778ba;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --glow-cyan: 0 0 20px rgba(88, 166, 255, 0.3);
+            --glow-purple: 0 0 20px rgba(163, 113, 247, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(circle at 1px 1px, rgba(88, 166, 255, 0.08) 1px, transparent 0);
+            background-size: 40px 40px;
+            pointer-events: none; z-index: 0;
+        }
+
+        .bg-glow {
+            position: fixed; width: 800px; height: 800px; border-radius: 50%;
+            filter: blur(120px); opacity: 0.08; pointer-events: none; z-index: 0;
+        }
+        .bg-glow-1 { top: -400px; right: -200px; background: var(--accent-cyan); }
+        .bg-glow-2 { bottom: -400px; left: -200px; background: var(--accent-purple); }
+
+        /* Header */
+        header {
+            position: relative; z-index: 1;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .brand-text { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+        .brand-subtitle { font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+        /* Language Switcher */
+        .lang-switcher {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .lang-switcher select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.15s;
+        }
+        .lang-switcher select:hover {
+            border-color: var(--accent-cyan);
+        }
+        .lang-switcher select:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+        }
+        .lang-switcher select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            display: flex; gap: 4px;
+            background: var(--bg-tertiary); border-radius: 10px; padding: 4px;
+        }
+
+        .tab-btn {
+            padding: 8px 20px; border: none; border-radius: 8px;
+            background: transparent; color: var(--text-secondary);
+            font-size: 0.85rem; font-weight: 500; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+        }
+
+        .tab-btn:hover { color: var(--text-primary); }
+
+        .tab-btn.active {
+            background: var(--accent-cyan); color: var(--bg-primary);
+            box-shadow: var(--glow-cyan);
+        }
+
+        .tutorial-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px;
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500;
+            transition: all 0.2s; white-space: nowrap;
+        }
+
+        .tutorial-btn:hover {
+            background: var(--accent-pink); color: white;
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 16px rgba(247, 120, 186, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .download-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px;
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500;
+            transition: all 0.2s; white-space: nowrap;
+        }
+
+        .download-btn:hover {
+            background: var(--accent-green); color: white;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 16px rgba(63, 185, 80, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Main Layout */
+        .main-container {
+            position: relative; z-index: 1;
+            max-width: 1600px; margin: 0 auto; padding: 32px 40px;
+            display: grid; grid-template-columns: 1fr 420px; gap: 32px;
+        }
+
+        .left-panel { display: flex; flex-direction: column; gap: 24px; }
+        .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Control Bar */
+        .control-bar {
+            display: flex; align-items: center; gap: 16px;
+            padding: 12px 16px; background: var(--bg-secondary);
+            border: 1px solid var(--border-color); border-radius: 12px;
+        }
+
+        .control-group { display: flex; align-items: center; gap: 10px; }
+
+        .control-label {
+            font-size: 0.8rem; color: var(--text-secondary);
+            font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .disk-slider { display: flex; align-items: center; gap: 12px; }
+
+        input[type="range"] {
+            -webkit-appearance: none; width: 120px; height: 4px;
+            background: var(--bg-tertiary); border-radius: 2px; outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px;
+            background: var(--accent-cyan); border-radius: 50%; cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .disk-count {
+            font-family: 'JetBrains Mono', monospace; font-weight: 600;
+            color: var(--accent-cyan); min-width: 24px; text-align: center;
+        }
+
+        .speed-btn {
+            padding: 6px 12px; background: transparent;
+            border: 1px solid var(--border-color); color: var(--text-secondary);
+            border-radius: 6px; cursor: pointer; font-size: 0.75rem;
+            font-weight: 500; transition: all 0.15s;
+        }
+
+        .speed-btn:hover, .speed-btn.active {
+            background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan);
+        }
+
+        .btn {
+            padding: 8px 16px; border: none; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 500; cursor: pointer;
+            transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+        }
+
+        .btn-primary { background: var(--accent-cyan); color: var(--bg-primary); }
+        .btn-primary:hover { background: #79b8ff; transform: translateY(-1px); }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: var(--border-color); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* Step Navigator */
+        .step-nav {
+            display: flex; align-items: center; justify-content: center; gap: 16px;
+            padding: 16px; background: var(--bg-secondary);
+            border: 1px solid var(--border-color); border-radius: 12px;
+        }
+
+        .step-nav-btn {
+            width: 40px; height: 40px; border-radius: 8px;
+            border: 1px solid var(--border-color); background: var(--bg-tertiary);
+            color: var(--text-primary); font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+        }
+
+        .step-nav-btn:hover:not(:disabled) { background: var(--border-color); transform: translateY(-1px); }
+        .step-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .step-nav-btn.play-pause {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--accent-cyan); border: none; color: var(--bg-primary); font-size: 1.2rem;
+        }
+
+        .step-nav-btn.play-pause:hover:not(:disabled) { background: #79b8ff; box-shadow: var(--glow-cyan); }
+
+        .step-nav-info {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            color: var(--text-secondary); min-width: 100px; text-align: center;
+        }
+
+        .step-nav-info .current { color: var(--accent-cyan); font-weight: 600; font-size: 1.1rem; }
+
+        /* Stage */
+        .stage-container {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 48px; position: relative;
+            min-height: 400px; display: flex; align-items: flex-end; justify-content: center;
+        }
+
+        .stage {
+            display: flex; justify-content: space-around; align-items: flex-end;
+            width: 100%; max-width: 600px; height: 300px;
+            position: relative; padding-bottom: 16px;
+        }
+
+        .base {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 8px; background: var(--bg-tertiary); border-radius: 4px;
+        }
+
+        .pole-wrapper {
+            display: flex; flex-direction: column; align-items: center;
+            position: relative; width: 140px; cursor: default;
+        }
+
+        .pole-wrapper.clickable { cursor: pointer; }
+
+        .pole-wrapper.clickable:hover .pole-label { color: var(--text-primary); }
+
+        .pole {
+            width: 10px; height: 240px;
+            background: linear-gradient(180deg, var(--border-color), var(--bg-tertiary));
+            border-radius: 5px; position: relative;
+        }
+
+        .pole-label {
+            margin-top: 16px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .pole-wrapper.active .pole-label { color: var(--accent-cyan); }
+        .pole-wrapper.selected .pole-label { color: var(--accent-yellow); }
+
+        .pole-wrapper.selected .pole {
+            box-shadow: 0 0 15px rgba(210, 153, 34, 0.3);
+        }
+
+        .pole-wrapper.invalid-flash .pole {
+            animation: invalidShake 0.4s ease;
+            background: linear-gradient(180deg, var(--accent-red), #da3633);
+        }
+
+        @keyframes invalidShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        /* Disks */
+        .disk {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            height: 24px; border-radius: 4px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.9);
+        }
+
+        .disk::after {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); width: 16%; height: 40%;
+            background: rgba(0,0,0,0.25); border-radius: 2px;
+        }
+
+        .disk-1 { background: linear-gradient(180deg, #ff7b72, var(--accent-red)); }
+        .disk-2 { background: linear-gradient(180deg, #ffa657, var(--accent-orange)); }
+        .disk-3 { background: linear-gradient(180deg, #ffd54f, var(--accent-yellow)); }
+        .disk-4 { background: linear-gradient(180deg, #7ee787, var(--accent-green)); }
+        .disk-5 { background: linear-gradient(180deg, #56d4dd, #39c5cf); }
+        .disk-6 { background: linear-gradient(180deg, #79c0ff, var(--accent-cyan)); }
+        .disk-7 { background: linear-gradient(180deg, #d2a8ff, var(--accent-purple)); }
+        .disk-8 { background: linear-gradient(180deg, #f778ba, #e85aad); }
+
+        .disk.moving { z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
+        .disk.selected-disk {
+            filter: brightness(1.3);
+            box-shadow: 0 0 16px rgba(210, 153, 34, 0.6), 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Panel Base */
+        .panel {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 12px 16px; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .panel-title {
+            font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        /* Code Panel */
+        .code-content {
+            padding: 16px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; line-height: 1.8;
+        }
+
+        .code-line {
+            padding: 4px 12px; border-radius: 6px; margin: 2px 0;
+            display: flex; align-items: center; transition: all 0.2s; position: relative;
+        }
+
+        .line-number { color: var(--text-muted); min-width: 28px; font-size: 0.75rem; user-select: none; }
+        .line-content { color: var(--text-secondary); }
+        .keyword { color: #ff7b72; }
+        .function { color: #d2a8ff; }
+        .string { color: #a5d6ff; }
+        .number { color: #79c0ff; }
+
+        .code-line.active { background: rgba(88, 166, 255, 0.1); }
+        .code-line.active::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px; background: var(--accent-cyan); border-radius: 0 2px 2px 0;
+        }
+        .code-line.active .line-content { color: var(--text-primary); }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+        .stat-item { display: flex; flex-direction: column; gap: 4px; }
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.5rem;
+            font-weight: 600; color: var(--accent-cyan);
+        }
+        .stat-label {
+            font-size: 0.75rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .progress-bar {
+            height: 4px; background: var(--bg-tertiary);
+            margin: 0 16px 16px; border-radius: 2px; overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 2px; transition: width 0.3s;
+        }
+
+        /* Stack */
+        .stack-content {
+            padding: 12px; min-height: 100px; max-height: 180px;
+            overflow-y: auto; display: flex; flex-direction: column-reverse;
+        }
+
+        .stack-empty { color: var(--text-muted); text-align: center; padding: 24px; font-size: 0.85rem; }
+
+        .stack-frame {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 6px; padding: 8px 12px; margin: 3px 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            display: flex; align-items: center; gap: 8px;
+            animation: slideIn 0.25s ease; transition: all 0.2s;
+        }
+
+        .stack-frame.active { background: rgba(88, 166, 255, 0.1); border-color: var(--accent-cyan); }
+        .stack-frame-level {
+            background: var(--accent-purple); color: white;
+            padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;
+        }
+        .stack-frame-args { color: var(--accent-cyan); }
+
+        /* Explain */
+        .explain-content { padding: 16px; }
+        .explain-code {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            color: var(--accent-cyan); background: var(--bg-tertiary);
+            padding: 10px 12px; border-radius: 6px; margin-bottom: 12px;
+            border-left: 3px solid var(--accent-cyan);
+        }
+        .explain-text { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; }
+        .explain-text strong { color: var(--accent-purple); font-weight: 500; }
+        .explain-empty { color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.85rem; }
+
+        /* Log */
+        .log-content { padding: 12px; max-height: 160px; overflow-y: auto; }
+        .log-entry {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            padding: 6px 0; border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary); display: flex; align-items: center; gap: 8px;
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-step { color: var(--accent-cyan); font-weight: 600; min-width: 40px; }
+        .log-arrow { color: var(--accent-purple); }
+
+        /* Game Mode Specific */
+        .game-hint {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            padding: 8px 20px; border-radius: 8px;
+            font-size: 0.85rem; color: var(--text-secondary);
+            opacity: 0; transition: all 0.3s; pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .game-hint.visible { opacity: 1; }
+        .game-hint.error { border-color: var(--accent-red); color: var(--accent-red); }
+        .game-hint.success { border-color: var(--accent-green); color: var(--accent-green); }
+
+        .game-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 16px; }
+
+        .game-stat-value {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.3rem;
+            font-weight: 600; color: var(--accent-cyan);
+        }
+
+        .game-stat-value.timer { color: var(--accent-orange); }
+        .game-stat-value.moves { color: var(--accent-purple); }
+
+        .game-rules { padding: 16px; }
+        .game-rules h3 {
+            font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        .game-rules li {
+            font-size: 0.8rem; color: var(--text-secondary);
+            margin-bottom: 6px; padding-left: 4px; line-height: 1.5;
+        }
+        .game-rules li strong { color: var(--accent-cyan); font-weight: 500; }
+
+        .game-result {
+            padding: 20px; text-align: center;
+        }
+
+        .game-result-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .game-result-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+        .game-result-desc { font-size: 0.85rem; color: var(--text-secondary); }
+
+        .game-result.perfect .game-result-title { color: var(--accent-green); }
+        .game-result.good .game-result-title { color: var(--accent-cyan); }
+        .game-result.normal .game-result-title { color: var(--accent-orange); }
+
+        /* Mode visibility */
+        .mode-demo { display: block; }
+        .mode-game { display: none; }
+        body.game-active .mode-demo { display: none; }
+        body.game-active .mode-game { display: block; }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .celebrate { animation: celebrate 0.5s ease 3; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container { grid-template-columns: 1fr; }
+            .right-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        }
+
+        @media (max-width: 768px) {
+            .main-container { padding: 16px; }
+            .right-panel { grid-template-columns: 1fr; }
+            .stage-container { padding: 24px; }
+            header { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <header>
+        <div class="brand">
+            <div class="brand-icon">🗼</div>
+            <div>
+                <div class="brand-text" data-i18n="brand_title">汉诺塔</div>
+                <div class="brand-subtitle" data-i18n="brand_subtitle">Tower of Hanoi</div>
+            </div>
+        </div>
+        <div class="lang-switcher">
+            <select id="langSelect" onchange="setLanguage(this.value)">
+                <option value="zh">🇨🇳 中文</option>
+                <option value="en">🇺🇸 English</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="ja">🇯🇵 日本語</option>
+            </select>
+        </div>
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchMode('demo')" data-i18n="tab_demo">演示模式</button>
+            <button class="tab-btn" onclick="switchMode('game')" data-i18n="tab_game">游玩模式</button>
+        </div>
+        <a class="tutorial-btn" href="https://www.bilibili.com/video/BV1hPSvB3EQz" target="_blank" rel="noopener noreferrer">
+            <span>📺</span>
+            <span data-i18n="btn_tutorial">教程视频</span>
+        </a>
+        <a class="download-btn" href="http://web.fish233.com/app-home.html" download target="_blank" rel="noopener noreferrer">
+            <span>📥</span>
+            <span data-i18n="btn_download">编译器下载</span>
+        </a>
+    </header>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <!-- ========== DEMO MODE ========== -->
+            <div class="mode-demo">
+                <div class="control-bar">
+                    <div class="control-group">
+                        <span class="control-label" data-i18n="label_disks">Disks</span>
+                        <div class="disk-slider">
+                            <input type="range" id="diskInput" min="3" max="8" value="3">
+                            <span class="disk-count" id="diskCount">3</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <span class="control-label" data-i18n="label_speed">Speed</span>
+                        <div class="speed-control">
+                            <button class="speed-btn" data-speed="1200" data-i18n="speed_slow">Slow</button>
+                            <button class="speed-btn active" data-speed="600" data-i18n="speed_normal">Normal</button>
+                            <button class="speed-btn" data-speed="300" data-i18n="speed_fast">Fast</button>
+                        </div>
+                    </div>
+                    <div style="margin-left: auto; display: flex; gap: 8px;">
+                        <button class="btn btn-primary" id="startBtn" onclick="start()"><span>▶</span> <span data-i18n="btn_start">Start</span></button>
+                        <button class="btn btn-secondary" id="resetBtn" onclick="reset()"><span>↺</span> <span data-i18n="btn_reset">Reset</span></button>
+                    </div>
+                </div>
+                <div class="step-nav">
+                    <button class="step-nav-btn" id="prevBtn" onclick="stepBackward()" disabled>◀</button>
+                    <button class="step-nav-btn play-pause" id="playPauseBtn" onclick="togglePlayPause()" disabled>▶</button>
+                    <button class="step-nav-btn" id="nextBtn" onclick="stepForward()" disabled>▶</button>
+                    <div class="step-nav-info">
+                        <span class="current" id="navStep">0</span> / <span id="navTotal">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== GAME MODE ========== -->
+            <div class="mode-game">
+                <div class="control-bar">
+                    <div class="control-group">
+                        <span class="control-label" data-i18n="label_disks">Disks</span>
+                        <div class="disk-slider">
+                            <input type="range" id="gameDiskInput" min="3" max="8" value="3">
+                            <span class="disk-count" id="gameDiskCount">3</span>
+                        </div>
+                    </div>
+                    <div style="margin-left: auto; display: flex; gap: 8px;">
+                        <button class="btn btn-primary" id="gameResetBtn" onclick="gameReset()"><span>↺</span> <span data-i18n="btn_restart">Restart</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage (shared) -->
+            <div class="stage-container">
+                <div class="game-hint" id="gameHint"></div>
+                <div class="stage" id="stage">
+                    <div class="base"></div>
+                    <div class="pole-wrapper" id="wrapper-A" onclick="onPoleClick('A')">
+                        <div class="pole" id="A"></div>
+                        <div class="pole-label">A</div>
+                    </div>
+                    <div class="pole-wrapper" id="wrapper-B" onclick="onPoleClick('B')">
+                        <div class="pole" id="B"></div>
+                        <div class="pole-label">B</div>
+                    </div>
+                    <div class="pole-wrapper" id="wrapper-C" onclick="onPoleClick('C')">
+                        <div class="pole" id="C"></div>
+                        <div class="pole-label">C</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <!-- ========== DEMO RIGHT PANEL ========== -->
+            <div class="mode-demo">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_code">Code</span></div>
+                    <div class="code-content" id="codeContent">
+                        <div class="code-line" id="line0"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">hanoi</span>(n, a, b, c):</span></div>
+                        <div class="code-line" id="line1"><span class="line-number">2</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> n == <span class="number">1</span>:</span></div>
+                        <div class="code-line" id="line2"><span class="line-number">3</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">print</span>(<span class="string">f"{a} -&gt; {c}"</span>)</span></div>
+                        <div class="code-line" id="line3"><span class="line-number">4</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span>:</span></div>
+                        <div class="code-line" id="line4"><span class="line-number">5</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hanoi(n-<span class="number">1</span>, a, c, b)</span></div>
+                        <div class="code-line" id="line5"><span class="line-number">6</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">print</span>(<span class="string">f"{a} -&gt; {c}"</span>)</span></div>
+                        <div class="code-line" id="line6"><span class="line-number">7</span><span class="line-content">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hanoi(n-<span class="number">1</span>, b, a, c)</span></div>
+                        <div class="code-line" id="line7"><span class="line-number">8</span><span class="line-content"></span></div>
+                        <div class="code-line" id="line8"><span class="line-number">9</span><span class="line-content">hanoi(<span class="number">3</span>, <span class="string">'A'</span>, <span class="string">'B'</span>, <span class="string">'C'</span>)</span></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_progress">Progress</span></div>
+                    <div class="stats-grid">
+                        <div class="stat-item"><div class="stat-value" id="currentStep">0</div><div class="stat-label" data-i18n="stat_current">Current</div></div>
+                        <div class="stat-item"><div class="stat-value" id="totalSteps">0</div><div class="stat-label" data-i18n="stat_total">Total</div></div>
+                        <div class="stat-item"><div class="stat-value" id="minSteps">7</div><div class="stat-label" data-i18n="stat_minimum">Minimum</div></div>
+                        <div class="stat-item"><div class="stat-value" id="progress">0%</div><div class="stat-label" data-i18n="stat_complete">Complete</div></div>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title" data-i18n="panel_callstack">Call Stack</span>
+                        <span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-cyan);" id="stackDepth">Depth: 0</span>
+                    </div>
+                    <div class="stack-content" id="stackContent"><div class="stack-empty" data-i18n="empty_waiting">Waiting...</div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_explanation">Explanation</span></div>
+                    <div class="explain-content" id="explainContent"><div class="explain-empty" data-i18n="empty_click_start">Click Start to begin</div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_moves">Moves</span></div>
+                    <div class="log-content" id="logPanel"><div class="stack-empty" data-i18n="empty_no_moves">No moves yet</div></div>
+                </div>
+            </div>
+
+            <!-- ========== GAME RIGHT PANEL ========== -->
+            <div class="mode-game">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_status">Status</span></div>
+                    <div class="game-stats-grid">
+                        <div class="stat-item">
+                            <div class="game-stat-value moves" id="gameMoves">0</div>
+                            <div class="stat-label" data-i18n="stat_moves">Moves</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="game-stat-value" id="gameMinMoves">7</div>
+                            <div class="stat-label" data-i18n="stat_minimum">Minimum</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="game-stat-value timer" id="gameTimer">00:00</div>
+                            <div class="stat-label" data-i18n="stat_time">Time</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="gameProgressFill" style="width: 0%"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_rules">Rules</span></div>
+                    <div class="game-rules">
+                        <h3 data-i18n="rules_how_to_play">How to Play</h3>
+                        <ul style="list-style: none;">
+                            <li data-i18n-html="rules_goal">🎯 <strong>Goal:</strong> Move all disks from A to C</li>
+                            <li data-i18n-html="rules_click_select">👆 <strong>Click</strong> a pole to select its top disk</li>
+                            <li data-i18n-html="rules_click_place">👆 <strong>Click</strong> another pole to place it</li>
+                            <li data-i18n-html="rules_cannot_place">🚫 <strong>Cannot</strong> place a larger disk on a smaller one</li>
+                            <li data-i18n-html="rules_perfect">⭐ <strong>Perfect:</strong> Complete in 2ⁿ-1 moves</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_move_history">Move History</span></div>
+                    <div class="log-content" id="gameLogPanel"><div class="stack-empty" data-i18n="empty_no_moves">No moves yet</div></div>
+                </div>
+                <div class="panel" id="gameResultPanel" style="display: none;">
+                    <div class="game-result" id="gameResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== I18N SYSTEM ====================
+        let currentLang = 'zh';
+
+        const translations = {
+            zh: {
+                brand_title: '汉诺塔',
+                brand_subtitle: 'Tower of Hanoi',
+                tab_demo: '演示模式',
+                tab_game: '游玩模式',
+                label_disks: '盘子',
+                label_speed: '速度',
+                speed_slow: '慢速',
+                speed_normal: '正常',
+                speed_fast: '快速',
+                btn_start: '开始',
+                btn_reset: '重置',
+                btn_restart: '重新开始',
+                btn_tutorial: '教程视频',
+                btn_download: '下载编译器',
+                panel_code: '代码',
+                panel_progress: '进度',
+                panel_callstack: '调用栈',
+                panel_explanation: '解释',
+                panel_moves: '移动记录',
+                panel_status: '状态',
+                panel_rules: '规则',
+                panel_move_history: '移动历史',
+                stat_current: '当前',
+                stat_total: '总计',
+                stat_minimum: '最少',
+                stat_complete: '完成度',
+                stat_moves: '步数',
+                stat_time: '时间',
+                empty_waiting: '等待中...',
+                empty_no_moves: '暂无移动',
+                empty_click_start: '点击开始',
+                rules_how_to_play: '如何游玩',
+                rules_goal: '🎯 <strong>目标：</strong>将所有盘子从 A 移到 C',
+                rules_click_select: '👆 <strong>点击</strong>柱子选中顶部盘子',
+                rules_click_place: '👆 <strong>点击</strong>目标柱子放置盘子',
+                rules_cannot_place: '🚫 <strong>不可</strong>将大盘子放在小盘子上',
+                rules_perfect: '⭐ <strong>完美：</strong>用 2ⁿ-1 步完成',
+                hint_empty_pole: '该柱子为空',
+                hint_invalid_move: '不能将大盘子放在小盘子上',
+                hint_selected_pole: '已选中柱子 {pole}，点击目标柱子',
+                log_move: '移动',
+                result_perfect: '完美！',
+                result_good: '做得好！',
+                result_normal: '已完成！',
+                result_perfect_desc: '{moves} 步，用时 {time} — 最优解！',
+                result_good_desc: '{moves} 步，用时 {time} — 最少需要 {min} 步',
+                result_normal_desc: '{moves} 步，用时 {time} — 最少需要 {min} 步',
+                depth_label: '深度',
+                // Code explanations
+                code_explain_0: '进入 <strong>hanoi</strong> 函数。参数：<strong>n</strong> = 盘子数，<strong>a</strong> = 源柱，<strong>b</strong> = 辅助柱，<strong>c</strong> = 目标柱。',
+                code_explain_1: '检查<strong>基本情况</strong>：当只剩 1 个盘子时，直接移动。这是递归终止条件。',
+                code_explain_2: '执行<strong>直接移动</strong>：将唯一的盘子从源柱移到目标柱。',
+                code_explain_3: '进入<strong>递归分支</strong>：分三步解决。',
+                code_explain_4: '<strong>第一步</strong>：将 <strong>n-1 个盘子</strong>从源柱移到辅助柱。',
+                code_explain_5: '<strong>第二步</strong>：将<strong>底部盘子</strong>移到目标柱。',
+                code_explain_6: '<strong>第三步</strong>：将 <strong>n-1 个盘子</strong>从辅助柱移到目标柱。',
+                code_explain_8: '<strong>主入口</strong>：开始解决 3 盘汉诺塔。'
+            },
+            en: {
+                brand_title: 'Tower of Hanoi',
+                brand_subtitle: 'Tower of Hanoi',
+                tab_demo: 'Demo Mode',
+                tab_game: 'Play Mode',
+                label_disks: 'Disks',
+                label_speed: 'Speed',
+                speed_slow: 'Slow',
+                speed_normal: 'Normal',
+                speed_fast: 'Fast',
+                btn_start: 'Start',
+                btn_reset: 'Reset',
+                btn_restart: 'Restart',
+                btn_tutorial: 'Tutorial',
+                btn_download: 'Compiler Download',
+                panel_code: 'Code',
+                panel_progress: 'Progress',
+                panel_callstack: 'Call Stack',
+                panel_explanation: 'Explanation',
+                panel_moves: 'Moves',
+                panel_status: 'Status',
+                panel_rules: 'Rules',
+                panel_move_history: 'Move History',
+                stat_current: 'Current',
+                stat_total: 'Total',
+                stat_minimum: 'Minimum',
+                stat_complete: 'Complete',
+                stat_moves: 'Moves',
+                stat_time: 'Time',
+                empty_waiting: 'Waiting...',
+                empty_no_moves: 'No moves yet',
+                empty_click_start: 'Click Start to begin',
+                rules_how_to_play: 'How to Play',
+                rules_goal: '🎯 <strong>Goal:</strong> Move all disks from A to C',
+                rules_click_select: '👆 <strong>Click</strong> a pole to select its top disk',
+                rules_click_place: '👆 <strong>Click</strong> another pole to place it',
+                rules_cannot_place: '🚫 <strong>Cannot</strong> place a larger disk on a smaller one',
+                rules_perfect: '⭐ <strong>Perfect:</strong> Complete in 2ⁿ-1 moves',
+                hint_empty_pole: 'This pole is empty',
+                hint_invalid_move: 'Cannot place larger disk on smaller one',
+                hint_selected_pole: 'Selected pole {pole}, click target pole',
+                log_move: 'Move',
+                result_perfect: 'Perfect!',
+                result_good: 'Well Done!',
+                result_normal: 'Completed!',
+                result_perfect_desc: '{moves} moves in {time} — optimal solution!',
+                result_good_desc: '{moves} moves in {time} — minimum is {min}',
+                result_normal_desc: '{moves} moves in {time} — minimum is {min}',
+                depth_label: 'Depth',
+                code_explain_0: 'Enter the <strong>hanoi</strong> function. Parameters: <strong>n</strong> = disk count, <strong>a</strong> = source, <strong>b</strong> = auxiliary, <strong>c</strong> = target.',
+                code_explain_1: 'Check <strong>base case</strong>: when only 1 disk remains, move it directly. This is the recursion termination.',
+                code_explain_2: 'Execute <strong>direct move</strong>: move the only disk from source to target.',
+                code_explain_3: 'Enter <strong>recursive branch</strong>: solve in three steps.',
+                code_explain_4: '<strong>Step 1</strong>: Move <strong>n-1 disks</strong> from source to auxiliary.',
+                code_explain_5: '<strong>Step 2</strong>: Move the <strong>bottom disk</strong> to target.',
+                code_explain_6: '<strong>Step 3</strong>: Move <strong>n-1 disks</strong> from auxiliary to target.',
+                code_explain_8: '<strong>Main entry</strong>: Start solving 3-disk Tower of Hanoi.'
+            },
+            ru: {
+                brand_title: 'Ханойская башня',
+                brand_subtitle: 'Tower of Hanoi',
+                tab_demo: 'Демонстрация',
+                tab_game: 'Игра',
+                label_disks: 'Диски',
+                label_speed: 'Скорость',
+                speed_slow: 'Медленно',
+                speed_normal: 'Обычно',
+                speed_fast: 'Быстро',
+                btn_start: 'Старт',
+                btn_reset: 'Сброс',
+                btn_restart: 'Заново',
+                btn_tutorial: 'Видеоурок',
+                btn_download: 'Скачать компилятор',
+                panel_code: 'Код',
+                panel_progress: 'Прогресс',
+                panel_callstack: 'Стек вызовов',
+                panel_explanation: 'Объяснение',
+                panel_moves: 'Ходы',
+                panel_status: 'Статус',
+                panel_rules: 'Правила',
+                panel_move_history: 'История ходов',
+                stat_current: 'Текущий',
+                stat_total: 'Всего',
+                stat_minimum: 'Минимум',
+                stat_complete: 'Готовность',
+                stat_moves: 'Ходы',
+                stat_time: 'Время',
+                empty_waiting: 'Ожидание...',
+                empty_no_moves: 'Ходов пока нет',
+                empty_click_start: 'Нажмите Старт для начала',
+                rules_how_to_play: 'Как играть',
+                rules_goal: '🎯 <strong>Цель:</strong> Переместить все диски с A на C',
+                rules_click_select: '👆 <strong>Нажмите</strong> на столб, чтобы выбрать верхний диск',
+                rules_click_place: '👆 <strong>Нажмите</strong> на другой столб, чтобы разместить диск',
+                rules_cannot_place: '🚫 <strong>Нельзя</strong> ставить больший диск на меньший',
+                rules_perfect: '⭐ <strong>Идеально:</strong> Завершите за 2ⁿ-1 ходов',
+                hint_empty_pole: 'Этот столб пуст',
+                hint_invalid_move: 'Нельзя поставить больший диск на меньший',
+                hint_selected_pole: 'Выбран столб {pole}, нажмите на целевой столб',
+                log_move: 'Ход',
+                result_perfect: 'Идеально!',
+                result_good: 'Отлично!',
+                result_normal: 'Завершено!',
+                result_perfect_desc: '{moves} ходов за {time} — оптимальное решение!',
+                result_good_desc: '{moves} ходов за {time} — минимум: {min}',
+                result_normal_desc: '{moves} ходов за {time} — минимум: {min}',
+                depth_label: 'Глубина',
+                code_explain_0: 'Вход в функцию <strong>hanoi</strong>. Параметры: <strong>n</strong> — количество дисков, <strong>a</strong> — исходный столб, <strong>b</strong> — вспомогательный, <strong>c</strong> — целевой.',
+                code_explain_1: 'Проверка <strong>базового случая</strong>: когда остаётся 1 диск, перемещаем его напрямую. Это условие завершения рекурсии.',
+                code_explain_2: 'Выполнение <strong>прямого перемещения</strong>: перемещаем единственный диск с исходного столба на целевой.',
+                code_explain_3: 'Вход в <strong>рекурсивную ветку</strong>: решение в три шага.',
+                code_explain_4: '<strong>Шаг 1</strong>: Перемещаем <strong>n-1 дисков</strong> с исходного столба на вспомогательный.',
+                code_explain_5: '<strong>Шаг 2</strong>: Перемещаем <strong>нижний диск</strong> на целевой столб.',
+                code_explain_6: '<strong>Шаг 3</strong>: Перемещаем <strong>n-1 дисков</strong> со вспомогательного столба на целевой.',
+                code_explain_8: '<strong>Главная точка входа</strong>: Начинаем решение Ханойской башни с 3 дисками.'
+            },
+            ja: {
+                brand_title: 'ハノイの塔',
+                brand_subtitle: 'Tower of Hanoi',
+                tab_demo: 'デモモード',
+                tab_game: 'プレイモード',
+                label_disks: 'ディスク',
+                label_speed: '速度',
+                speed_slow: '遅い',
+                speed_normal: '普通',
+                speed_fast: '速い',
+                btn_start: '開始',
+                btn_reset: 'リセット',
+                btn_restart: 'リスタート',
+                btn_tutorial: 'チュートリアル動画',
+                btn_download: 'コンパイラーダウンロード',
+                panel_code: 'コード',
+                panel_progress: '進捗',
+                panel_callstack: 'コールスタック',
+                panel_explanation: '解説',
+                panel_moves: '移動記録',
+                panel_status: 'ステータス',
+                panel_rules: 'ルール',
+                panel_move_history: '移動履歴',
+                stat_current: '現在',
+                stat_total: '合計',
+                stat_minimum: '最小',
+                stat_complete: '完了率',
+                stat_moves: '手数',
+                stat_time: '時間',
+                empty_waiting: '待機中...',
+                empty_no_moves: 'まだ移動していません',
+                empty_click_start: '開始をクリックしてください',
+                rules_how_to_play: '遊び方',
+                rules_goal: '🎯 <strong>目標：</strong>すべてのディスクを A から C に移動する',
+                rules_click_select: '👆 <strong>クリック</strong>してポールの一番上のディスクを選択',
+                rules_click_place: '👆 <strong>クリック</strong>して別のポールに置く',
+                rules_cannot_place: '🚫 <strong>不可：</strong>大きいディスクを小さいディスクの上に置けない',
+                rules_perfect: '⭐ <strong>パーフェクト：</strong>2ⁿ-1手でクリア',
+                hint_empty_pole: 'このポールは空です',
+                hint_invalid_move: '大きいディスクを小さいディスクの上に置けません',
+                hint_selected_pole: 'ポール {pole} を選択しました。移動先をクリック',
+                log_move: '移動',
+                result_perfect: 'パーフェクト！',
+                result_good: 'よくできました！',
+                result_normal: 'クリア！',
+                result_perfect_desc: '{time} で {moves} 手 — 最適解！',
+                result_good_desc: '{time} で {moves} 手 — 最小は {min} 手',
+                result_normal_desc: '{time} で {moves} 手 — 最小は {min} 手',
+                depth_label: '深さ',
+                code_explain_0: '<strong>hanoi</strong> 関数に入ります。パラメータ：<strong>n</strong> = ディスク数、<strong>a</strong> = 元のポール、<strong>b</strong> = 補助ポール、<strong>c</strong> = 目標ポール。',
+                code_explain_1: '<strong>ベースケース</strong>の確認：ディスクが1枚だけの場合、直接移動します。これが再帰の終了条件です。',
+                code_explain_2: '<strong>直接移動</strong>の実行：唯一のディスクを元のポールから目標ポールへ移動します。',
+                code_explain_3: '<strong>再帰分岐</strong>に入ります：3つのステップで解決します。',
+                code_explain_4: '<strong>ステップ1</strong>：<strong>n-1枚のディスク</strong>を元のポールから補助ポールへ移動します。',
+                code_explain_5: '<strong>ステップ2</strong>：<strong>一番下のディスク</strong>を目標ポールへ移動します。',
+                code_explain_6: '<strong>ステップ3</strong>：<strong>n-1枚のディスク</strong>を補助ポールから目標ポールへ移動します。',
+                code_explain_8: '<strong>メインエントリ</strong>：3枚のハノイの塔の解決を開始します。'
+            }
+        };
+
+        // Translation helper function
+        function t(key) {
+            return translations[currentLang][key] || translations['zh'][key] || key;
+        }
+
+        // Template helper for parameterized strings
+        function tReplace(key, params) {
+            let str = t(key);
+            for (const [k, v] of Object.entries(params)) {
+                str = str.replace(`{${k}}`, v);
+            }
+            return str;
+        }
+
+        function setLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLang = lang;
+            localStorage.setItem('hanoi_lang', lang);
+
+            // Update dropdown
+            document.getElementById('langSelect').value = lang;
+
+            // Update all data-i18n elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key] !== undefined) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Update all data-i18n-html elements
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                if (translations[lang][key] !== undefined) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+
+            // Update code explanations
+            updateCodeExplanations();
+
+            // Re-render dynamic content if needed
+            if (callStack.length === 0) {
+                renderStack();
+            }
+            if (!isRunning && currentStep === 0 && stepList.length === 0) {
+                updateExplain(-1);
+            }
+            // Refresh log panels' empty state text
+            const demoLogEmpty = document.querySelector('#logPanel .stack-empty');
+            if (demoLogEmpty) demoLogEmpty.textContent = t('empty_no_moves');
+            const gameLogEmpty = document.querySelector('#gameLogPanel .stack-empty');
+            if (gameLogEmpty) gameLogEmpty.textContent = t('empty_no_moves');
+        }
+
+        function updateCodeExplanations() {
+            codeExplanations[0].text = t('code_explain_0');
+            codeExplanations[1].text = t('code_explain_1');
+            codeExplanations[2].text = t('code_explain_2');
+            codeExplanations[3].text = t('code_explain_3');
+            codeExplanations[4].text = t('code_explain_4');
+            codeExplanations[5].text = t('code_explain_5');
+            codeExplanations[6].text = t('code_explain_6');
+            codeExplanations[8].text = t('code_explain_8');
+        }
+
+        // ==================== SHARED ====================
+        let diskNum = 3;
+        let speed = 600;
+        let currentMode = 'demo';
+
+        const diskWidths = {
+            3: [140, 100, 60], 4: [160, 120, 80, 40],
+            5: [180, 140, 100, 60, 40], 6: [200, 160, 120, 80, 60, 40],
+            7: [220, 180, 140, 100, 70, 50, 35], 8: [240, 200, 160, 120, 90, 65, 45, 30]
+        };
+
+        function addDisk(pole, width, diskId) {
+            const p = document.getElementById(pole);
+            const d = document.createElement('div');
+            d.className = `disk disk-${diskId}`;
+            d.style.width = width + 'px';
+            d.style.bottom = (p.children.length * 28) + 'px';
+            d.textContent = diskId;
+            p.appendChild(d);
+        }
+
+        function moveDiskInstant(from, to) {
+            const f = document.getElementById(from);
+            const t = document.getElementById(to);
+            const d = f.lastElementChild;
+            if (!d) return;
+            f.removeChild(d);
+            d.style.bottom = (t.children.length * 28) + 'px';
+            t.appendChild(d);
+        }
+
+        // ==================== MODE SWITCH ====================
+        function switchMode(mode) {
+            if (mode === currentMode) return;
+
+            // Stop demo if running
+            if (isRunning) { pauseAutoPlay(); }
+
+            currentMode = mode;
+            document.body.classList.toggle('game-active', mode === 'game');
+
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (i === 0 && mode === 'demo') || (i === 1 && mode === 'game'));
+            });
+
+            // Set pole clickability
+            document.querySelectorAll('.pole-wrapper').forEach(w => {
+                w.classList.toggle('clickable', mode === 'game');
+            });
+
+            if (mode === 'game') {
+                gameInit();
+            } else {
+                initTower();
+            }
+        }
+
+        // ==================== DEMO MODE ====================
+        let isRunning = false;
+        let stepList = [];
+        let callStack = [];
+        let currentStep = 0;
+        let timer = null;
+
+        const codeExplanations = {
+            0: { code: "def hanoi(n, a, b, c):", text: "" },
+            1: { code: "if n == 1:", text: "" },
+            2: { code: "print(f\"{a} -> {c}\")", text: "" },
+            3: { code: "else:", text: "" },
+            4: { code: "hanoi(n-1, a, c, b)", text: "" },
+            5: { code: "print(f\"{a} -> {c}\")", text: "" },
+            6: { code: "hanoi(n-1, b, a, c)", text: "" },
+            8: { code: "hanoi(3, 'A', 'B', 'C')", text: "" }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize language
+            const savedLang = localStorage.getItem('hanoi_lang') || 'zh';
+            currentLang = savedLang;
+            document.getElementById('langSelect').value = savedLang;
+            updateCodeExplanations();
+
+            // Apply initial translations
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key] !== undefined) {
+                    el.textContent = translations[currentLang][key];
+                }
+            });
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                if (translations[currentLang][key] !== undefined) {
+                    el.innerHTML = translations[currentLang][key];
+                }
+            });
+
+            initTower();
+            setupDemoListeners();
+            setupGameListeners();
+        });
+
+        function setupDemoListeners() {
+            const diskInput = document.getElementById('diskInput');
+            diskInput.addEventListener('input', (e) => {
+                if (isRunning) return;
+                diskNum = parseInt(e.target.value);
+                document.getElementById('diskCount').textContent = diskNum;
+                document.getElementById('minSteps').textContent = Math.pow(2, diskNum) - 1;
+                reset();
+            });
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    speed = parseInt(btn.dataset.speed);
+                });
+            });
+        }
+
+        function pushStack(n, a, b, c) { callStack.push({ n, a, b, c, level: callStack.length }); renderStack(); }
+        function popStack() { callStack.pop(); renderStack(); }
+
+        function renderStack() {
+            const c = document.getElementById('stackContent');
+            document.getElementById('stackDepth').textContent = `${t('depth_label')}: ${callStack.length}`;
+            if (callStack.length === 0) { c.innerHTML = `<div class="stack-empty">${t('empty_waiting')}</div>`; return; }
+            c.innerHTML = callStack.map((f, i) => `
+                <div class="stack-frame ${i === callStack.length - 1 ? 'active' : ''}">
+                    <span class="stack-frame-level">L${f.level}</span>
+                    <span>hanoi(</span><span class="stack-frame-args">${f.n}, '${f.a}', '${f.b}', '${f.c}'</span><span>)</span>
+                </div>`).join('');
+        }
+
+        function updateExplain(lineIndex) {
+            const c = document.getElementById('explainContent');
+            if (lineIndex < 0 || !codeExplanations[lineIndex]) { c.innerHTML = `<div class="explain-empty">${t('empty_click_start')}</div>`; return; }
+            const e = codeExplanations[lineIndex];
+            c.innerHTML = `<div class="explain-code">${e.code}</div><div class="explain-text">${e.text}</div>`;
+        }
+
+        function hanoiRecord(n, a, b, c) {
+            const steps = [];
+            steps.push({ line: 0, move: null, stackOp: 'push', args: { n, a, b, c } });
+            if (n === 1) {
+                steps.push({ line: 1, move: null, stackOp: 'none' });
+                steps.push({ line: 2, move: [a, c], stackOp: 'none' });
+            } else {
+                steps.push({ line: 3, move: null, stackOp: 'none' });
+                steps.push({ line: 4, move: null, stackOp: 'none' });
+                steps.push(...hanoiRecord(n - 1, a, c, b));
+                steps.push({ line: 5, move: [a, c], stackOp: 'none' });
+                steps.push({ line: 6, move: null, stackOp: 'none' });
+                steps.push(...hanoiRecord(n - 1, b, a, c));
+            }
+            steps.push({ line: 0, move: null, stackOp: 'pop' });
+            return steps;
+        }
+
+        function initTower() {
+            ['A', 'B', 'C'].forEach(p => document.getElementById(p).innerHTML = '');
+            const widths = diskWidths[diskNum];
+            for (let i = 0; i < diskNum; i++) addDisk('A', widths[i], diskNum - i);
+            highlightLine(-1);
+            clearLog();
+            callStack = [];
+            renderStack();
+        }
+
+        function highlightLine(index) {
+            document.querySelectorAll('.code-line').forEach((l, i) => l.classList.toggle('active', i === index));
+            updateExplain(index);
+            document.querySelectorAll('.pole-wrapper').forEach(w => w.classList.remove('active'));
+            if (index >= 0 && stepList[currentStep]?.move) {
+                const [, to] = stepList[currentStep].move;
+                document.getElementById(`wrapper-${to}`).classList.add('active');
+            }
+        }
+
+        function addLog(stepNum, from, to) {
+            const lp = document.getElementById('logPanel');
+            if (stepNum === 1) lp.innerHTML = '';
+            const e = document.createElement('div');
+            e.className = 'log-entry';
+            e.innerHTML = `<span class="log-step">#${stepNum}</span><span>${t('log_move')}</span><span style="color:var(--accent-cyan);font-weight:600;">${from}</span><span class="log-arrow">→</span><span style="color:var(--accent-green);font-weight:600;">${to}</span>`;
+            lp.insertBefore(e, lp.firstChild);
+            while (lp.children.length > 20) lp.removeChild(lp.lastChild);
+        }
+
+        function clearLog() { document.getElementById('logPanel').innerHTML = `<div class="stack-empty" data-i18n="empty_no_moves">${t('empty_no_moves')}</div>`; }
+
+        function updateStats() {
+            const ms = stepList.filter(s => s.move);
+            const cm = stepList.slice(0, currentStep).filter(s => s.move).length;
+            document.getElementById('currentStep').textContent = cm;
+            document.getElementById('totalSteps').textContent = ms.length;
+            const p = ms.length > 0 ? Math.round((cm / ms.length) * 100) : 0;
+            document.getElementById('progress').textContent = p + '%';
+            document.getElementById('progressFill').style.width = p + '%';
+        }
+
+        function applyStep(index) {
+            if (index < 0 || index >= stepList.length) return;
+            const s = stepList[index];
+            if (s.stackOp === 'push') pushStack(s.args.n, s.args.a, s.args.b, s.args.c);
+            else if (s.stackOp === 'pop') popStack();
+            highlightLine(s.line);
+            if (s.move) {
+                moveDiskInstant(s.move[0], s.move[1]);
+                addLog(stepList.slice(0, index + 1).filter(s => s.move).length, s.move[0], s.move[1]);
+            }
+        }
+
+        function start() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('diskInput').disabled = true;
+            initTower(); currentStep = 0;
+            highlightLine(8);
+            setTimeout(() => {
+                stepList = hanoiRecord(diskNum, 'A', 'B', 'C');
+                const tm = stepList.filter(s => s.move).length;
+                document.getElementById('totalSteps').textContent = tm;
+                document.getElementById('navTotal').textContent = tm;
+                document.getElementById('prevBtn').disabled = false;
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('playPauseBtn').disabled = false;
+                updateStats(); executeStep();
+            }, 400);
+        }
+
+        function executeStep() {
+            if (currentStep >= stepList.length) { finish(); return; }
+            applyStep(currentStep); currentStep++; updateStats(); updateNavButtons();
+            timer = setTimeout(executeStep, speed);
+        }
+
+        function stepForward() {
+            if (!stepList.length || currentStep >= stepList.length) return;
+            pauseAutoPlay(); applyStep(currentStep); currentStep++; updateStats(); updateNavButtons();
+        }
+
+        function stepBackward() {
+            if (currentStep <= 0) return;
+            pauseAutoPlay(); currentStep--;
+            rebuildTowerToStep(currentStep); updateStats(); updateNavButtons();
+        }
+
+        function rebuildTowerToStep(target) {
+            ['A', 'B', 'C'].forEach(p => document.getElementById(p).innerHTML = '');
+            const w = diskWidths[diskNum];
+            for (let i = 0; i < diskNum; i++) addDisk('A', w[i], diskNum - i);
+            callStack = []; renderStack(); clearLog();
+            for (let i = 0; i < target; i++) {
+                const s = stepList[i];
+                if (s.stackOp === 'push') pushStack(s.args.n, s.args.a, s.args.b, s.args.c);
+                else if (s.stackOp === 'pop') popStack();
+                if (s.move) moveDiskInstant(s.move[0], s.move[1]);
+            }
+            highlightLine(target > 0 && target <= stepList.length ? stepList[target - 1].line : -1);
+        }
+
+        function togglePlayPause() {
+            if (!stepList.length) return;
+            isRunning ? pauseAutoPlay() : resumeAutoPlay();
+        }
+
+        function pauseAutoPlay() {
+            if (timer) { clearTimeout(timer); timer = null; }
+            isRunning = false;
+            document.getElementById('playPauseBtn').textContent = '▶';
+            updateNavButtons();
+        }
+
+        function resumeAutoPlay() {
+            if (currentStep >= stepList.length) return;
+            isRunning = true;
+            document.getElementById('playPauseBtn').textContent = '⏸';
+            updateNavButtons(); executeStep();
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= stepList.length;
+            document.getElementById('navStep').textContent = stepList.slice(0, currentStep).filter(s => s.move).length;
+        }
+
+        function finish() {
+            isRunning = false; highlightLine(-1);
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('diskInput').disabled = false;
+            document.getElementById('playPauseBtn').textContent = '▶';
+            updateNavButtons();
+            document.querySelectorAll('.pole-wrapper').forEach(w => { w.style.animation = 'pulse 0.5s ease 3'; });
+            setTimeout(() => document.querySelectorAll('.pole-wrapper').forEach(w => w.style.animation = ''), 1500);
+        }
+
+        function reset() {
+            if (timer) { clearTimeout(timer); timer = null; }
+            isRunning = false; currentStep = 0; stepList = []; callStack = []; renderStack();
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('diskInput').disabled = false;
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('playPauseBtn').disabled = true;
+            document.getElementById('playPauseBtn').textContent = '▶';
+            document.getElementById('navStep').textContent = '0';
+            document.getElementById('navTotal').textContent = '0';
+            initTower(); updateStats();
+        }
+
+        // ==================== GAME MODE ====================
+        let gameState = {
+            towers: { A: [], B: [], C: [] },
+            selectedPole: null,
+            moves: 0,
+            startTime: null,
+            timerInterval: null,
+            isComplete: false,
+            diskNum: 3
+        };
+
+        function setupGameListeners() {
+            document.getElementById('gameDiskInput').addEventListener('input', (e) => {
+                if (gameState.isComplete) return;
+                const n = parseInt(e.target.value);
+                document.getElementById('gameDiskCount').textContent = n;
+                gameState.diskNum = n;
+                gameInit();
+            });
+        }
+
+        function gameInit() {
+            // Stop timer
+            if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; }
+
+            const n = gameState.diskNum;
+            gameState.towers = { A: [], B: [], C: [] };
+            for (let i = n; i >= 1; i--) gameState.towers.A.push(i);
+            gameState.selectedPole = null;
+            gameState.moves = 0;
+            gameState.startTime = null;
+            gameState.isComplete = false;
+
+            // Render
+            ['A', 'B', 'C'].forEach(p => document.getElementById(p).innerHTML = '');
+            const widths = diskWidths[n];
+            for (let i = 0; i < n; i++) addDisk('A', widths[i], n - i);
+
+            // Reset UI
+            document.querySelectorAll('.pole-wrapper').forEach(w => {
+                w.classList.remove('selected', 'invalid-flash');
+            });
+
+            document.getElementById('gameMoves').textContent = '0';
+            document.getElementById('gameMinMoves').textContent = Math.pow(2, n) - 1;
+            document.getElementById('gameTimer').textContent = '00:00';
+            document.getElementById('gameProgressFill').style.width = '0%';
+            document.getElementById('gameLogPanel').innerHTML = `<div class="stack-empty" data-i18n="empty_no_moves">${t('empty_no_moves')}</div>`;
+            document.getElementById('gameResultPanel').style.display = 'none';
+            hideHint();
+        }
+
+        function gameReset() {
+            gameInit();
+        }
+
+        function onPoleClick(pole) {
+            if (currentMode !== 'game' || gameState.isComplete) return;
+
+            if (gameState.selectedPole === null) {
+                // Select
+                if (gameState.towers[pole].length === 0) {
+                    showHint(t('hint_empty_pole'), 'error');
+                    return;
+                }
+                gameState.selectedPole = pole;
+                document.getElementById(`wrapper-${pole}`).classList.add('selected');
+                // Highlight top disk
+                const topDisk = document.getElementById(pole).lastElementChild;
+                if (topDisk) topDisk.classList.add('selected-disk');
+                showHint(tReplace('hint_selected_pole', { pole }), '');
+            } else if (gameState.selectedPole === pole) {
+                // Deselect
+                gameState.selectedPole = null;
+                document.getElementById(`wrapper-${pole}`).classList.remove('selected');
+                const topDisk = document.getElementById(pole).lastElementChild;
+                if (topDisk) topDisk.classList.remove('selected-disk');
+                hideHint();
+            } else {
+                // Try move
+                const from = gameState.selectedPole;
+                const disk = gameState.towers[from][gameState.towers[from].length - 1];
+                const targetTop = gameState.towers[pole].length > 0
+                    ? gameState.towers[pole][gameState.towers[pole].length - 1]
+                    : Infinity;
+
+                // Clear selection visuals
+                document.getElementById(`wrapper-${from}`).classList.remove('selected');
+                const prevDisk = document.getElementById(from).lastElementChild;
+                if (prevDisk) prevDisk.classList.remove('selected-disk');
+
+                if (disk > targetTop) {
+                    // Invalid move
+                    showHint(t('hint_invalid_move'), 'error');
+                    document.getElementById(`wrapper-${pole}`).classList.add('invalid-flash');
+                    setTimeout(() => document.getElementById(`wrapper-${pole}`).classList.remove('invalid-flash'), 500);
+                    gameState.selectedPole = null;
+                    return;
+                }
+
+                // Valid move
+                gameState.towers[from].pop();
+                gameState.towers[pole].push(disk);
+                gameState.moves++;
+                gameState.selectedPole = null;
+
+                // Start timer on first move
+                if (!gameState.startTime) {
+                    gameState.startTime = Date.now();
+                    gameState.timerInterval = setInterval(updateGameTimer, 100);
+                }
+
+                // Animate
+                moveDiskInstant(from, pole);
+                hideHint();
+
+                // Update UI
+                document.getElementById('gameMoves').textContent = gameState.moves;
+                const minMoves = Math.pow(gameState.diskNum, 2) - 1;
+                const pct = Math.min(100, Math.round((gameState.moves / (minMoves * 1.5)) * 100));
+                document.getElementById('gameProgressFill').style.width = pct + '%';
+
+                // Add log
+                const lp = document.getElementById('gameLogPanel');
+                if (gameState.moves === 1) lp.innerHTML = '';
+                const e = document.createElement('div');
+                e.className = 'log-entry';
+                e.innerHTML = `<span class="log-step">#${gameState.moves}</span><span>${t('log_move')}</span><span style="color:var(--accent-cyan);font-weight:600;">${from}</span><span class="log-arrow">→</span><span style="color:var(--accent-green);font-weight:600;">${pole}</span>`;
+                lp.insertBefore(e, lp.firstChild);
+
+                // Check win
+                if (gameState.towers.C.length === gameState.diskNum) {
+                    gameWin();
+                }
+            }
+        }
+
+        function updateGameTimer() {
+            if (!gameState.startTime) return;
+            const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const s = String(elapsed % 60).padStart(2, '0');
+            document.getElementById('gameTimer').textContent = `${m}:${s}`;
+        }
+
+        function showHint(text, type) {
+            const h = document.getElementById('gameHint');
+            h.textContent = text;
+            h.className = 'game-hint visible' + (type ? ` ${type}` : '');
+            clearTimeout(h._timeout);
+            h._timeout = setTimeout(() => h.classList.remove('visible'), 2000);
+        }
+
+        function hideHint() {
+            document.getElementById('gameHint').classList.remove('visible');
+        }
+
+        function gameWin() {
+            gameState.isComplete = true;
+            if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; }
+
+            const minMoves = Math.pow(gameState.diskNum, 2) - 1;
+            const moves = gameState.moves;
+            const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const s = String(elapsed % 60).padStart(2, '0');
+            const timeStr = `${m}:${s}`;
+
+            let rating, cls;
+            if (moves === minMoves) { rating = 'perfect'; cls = 'perfect'; }
+            else if (moves <= minMoves * 1.5) { rating = 'good'; cls = 'good'; }
+            else { rating = 'normal'; cls = 'normal'; }
+
+            const icons = { perfect: '🎯', good: '⭐', normal: '💪' };
+            const titleKeys = { perfect: 'result_perfect', good: 'result_good', normal: 'result_normal' };
+            const descKeys = { perfect: 'result_perfect_desc', good: 'result_good_desc', normal: 'result_normal_desc' };
+
+            document.getElementById('gameProgressFill').style.width = '100%';
+
+            const panel = document.getElementById('gameResultPanel');
+            panel.style.display = 'block';
+            document.getElementById('gameResult').className = `game-result ${cls}`;
+            document.getElementById('gameResult').innerHTML = `
+                <div class="game-result-icon">${icons[rating]}</div>
+                <div class="game-result-title">${t(titleKeys[rating])}</div>
+                <div class="game-result-desc">${tReplace(descKeys[rating], { moves, time: timeStr, min: minMoves })}</div>
+            `;
+
+            // Celebrate animation
+            document.querySelectorAll('.pole-wrapper').forEach(w => w.classList.add('celebrate'));
+            setTimeout(() => document.querySelectorAll('.pole-wrapper').forEach(w => w.classList.remove('celebrate')), 1500);
+        }
+    </script>
+</body>
+</html>
