@@ -509,12 +509,20 @@
         .tool-hanoi { display: block; }
         .tool-cps { display: none; }
         .tool-reaction { display: none; }
-        body.cps-active .tool-hanoi { display: none; }
+        .tool-memory { display: none; }
+        .tool-aim { display: none; }
+        
+        body.cps-active .tool-hanoi, body.cps-active .tool-reaction, body.cps-active .tool-memory, body.cps-active .tool-aim { display: none; }
         body.cps-active .tool-cps { display: block; }
-        body.cps-active .tool-reaction { display: none; }
-        body.reaction-active .tool-hanoi { display: none; }
-        body.reaction-active .tool-cps { display: none; }
+        
+        body.reaction-active .tool-hanoi, body.reaction-active .tool-cps, body.reaction-active .tool-memory, body.reaction-active .tool-aim { display: none; }
         body.reaction-active .tool-reaction { display: block; }
+
+        body.memory-active .tool-hanoi, body.memory-active .tool-cps, body.memory-active .tool-reaction, body.memory-active .tool-aim { display: none; }
+        body.memory-active .tool-memory { display: block; }
+
+        body.aim-active .tool-hanoi, body.aim-active .tool-cps, body.aim-active .tool-reaction, body.aim-active .tool-memory { display: none; }
+        body.aim-active .tool-aim { display: block; }
 
         /* CPS Styles */
         .cps-click-area {
@@ -640,7 +648,157 @@
             color: white;
         }
 
-        /* Reaction Test Styles */
+        /* Aim Trainer Styles */
+        .aim-area {
+            width: 100%;
+            height: 400px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .aim-target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, var(--accent-cyan) 20%, transparent 21%, transparent 40%, var(--accent-cyan) 41%, var(--accent-cyan) 60%, transparent 61%, transparent 80%, var(--accent-cyan) 81%);
+            background-color: rgba(88, 166, 255, 0.1);
+            border-radius: 50%;
+            cursor: pointer;
+            transform: translate(-50%, -50%) scale(0);
+            animation: aimTargetPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
+        }
+
+        @keyframes aimTargetPop {
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .aim-start-screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+        
+        .aim-start-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .aim-start-text {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            margin: 0 auto;
+        }
+
+        .memory-tile {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .memory-tile.visible {
+            opacity: 1;
+            transform: scale(1);
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+        }
+
+        .memory-tile.hidden-number {
+            color: transparent;
+            background: var(--text-primary);
+            border-color: var(--text-primary);
+            box-shadow: none;
+        }
+
+        .memory-tile.clicked {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        .memory-tile:hover:not(.clicked) {
+            transform: scale(1.05);
+        }
+
+        .memory-tile.error-shake {
+            animation: memoryErrorShake 0.4s ease;
+            background: var(--accent-red) !important;
+            border-color: var(--accent-red) !important;
+            color: white !important;
+        }
+
+        @keyframes memoryErrorShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        .memory-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(4px);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .memory-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .memory-overlay-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 8px;
+        }
+
+        .memory-overlay-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
         .reaction-area {
             width: 100%;
             height: 350px;
@@ -923,6 +1081,8 @@
             <button class="tab-btn active" onclick="switchTool('hanoi')" data-i18n="tab_hanoi">汉诺塔</button>
             <button class="tab-btn" onclick="switchTool('cps')" data-i18n="tab_cps">CPS测试</button>
             <button class="tab-btn" onclick="switchTool('reaction')" data-i18n="tab_reaction">反应测试</button>
+            <button class="tab-btn" onclick="switchTool('memory')" data-i18n="tab_memory">记忆测试</button>
+            <button class="tab-btn" onclick="switchTool('aim')" data-i18n="tab_aim">瞄准测试</button>
         </div>
         <a class="tutorial-btn hanoi-only" href="https://www.bilibili.com/video/BV1hPSvB3EQz" target="_blank" rel="noopener noreferrer">
             <span>📺</span>
@@ -1051,6 +1211,44 @@
                 <div class="stage-container" style="flex-direction: column; align-items: center; justify-content: center; padding: 24px;">
                     <div class="reaction-area" id="reactionArea" onclick="handleReactionClick()">
                         <div class="reaction-area-text" id="reactionAreaText" data-i18n="reaction_click_start">点击开始</div>
+                    </div>
+                </div>
+            </div>
+            <!-- ========== MEMORY TOOL ========== -->
+            <div class="tool-memory">
+                <div class="control-bar">
+                    <div style="margin-left: auto;">
+                        <button class="btn btn-primary" id="memoryStartBtn" onclick="startMemoryTest()"><span>▶</span> <span data-i18n="memory_start">开始测试</span></button>
+                    </div>
+                </div>
+                <div class="stage-container" style="flex-direction: column; align-items: center; justify-content: center; padding: 24px;">
+                    <div class="memory-grid" id="memoryGrid"></div>
+                    <div class="memory-overlay" id="memoryOverlay">
+                        <div class="memory-overlay-title" data-i18n="memory_game_over">游戏结束！</div>
+                        <div class="memory-overlay-subtitle" id="memoryResultLevel">Level 3</div>
+                        <button class="btn btn-primary" onclick="resetMemoryTest()"><span>↺</span> <span data-i18n="btn_restart">重新开始</span></button>
+                    </div>
+                </div>
+            </div>
+            <!-- ========== AIM TOOL ========== -->
+            <div class="tool-aim">
+                <div class="control-bar">
+                    <div class="sub-tab-bar">
+                        <button class="sub-tab-btn active" onclick="switchAimMode(10)">10</button>
+                        <button class="sub-tab-btn" onclick="switchAimMode(20)">20</button>
+                        <button class="sub-tab-btn" onclick="switchAimMode(30)">30</button>
+                    </div>
+                    <span class="control-label" data-i18n="aim_targets" style="margin-left: 8px;">目标数量</span>
+                    
+                    <div style="margin-left: auto;">
+                        <button class="btn btn-primary" id="aimStartBtn" onclick="startAimTest()"><span>▶</span> <span data-i18n="aim_start">开始测试</span></button>
+                    </div>
+                </div>
+                <div class="stage-container" style="flex-direction: column; align-items: center; justify-content: center; padding: 24px;">
+                    <div class="aim-area" id="aimArea">
+                        <div class="aim-start-screen" id="aimStartScreen">
+                            <div class="aim-start-text" data-i18n="empty_click_start">点击开始</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1214,6 +1412,77 @@
                     </div>
                 </div>
             </div>
+            <!-- ========== MEMORY RIGHT PANEL ========== -->
+            <div class="tool-memory">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_status">状态</span></div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="memoryLevel">3</div>
+                            <div class="stat-label" data-i18n="memory_level">当前关卡</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value best" id="memoryBest">3</div>
+                            <div class="stat-label" data-i18n="memory_best">最高关卡</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="memoryStrikes">0</div>
+                            <div class="stat-label" data-i18n="memory_strikes">失误</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="memory_rules">规则</span></div>
+                    <div class="reaction-tips-content">
+                        <ul style="list-style: none;">
+                            <li data-i18n="memory_rule1">记住方块上的数字位置</li>
+                            <li data-i18n-html="memory_rule2">点击 <strong>1</strong> 后，其他数字会被遮挡</li>
+                            <li data-i18n="memory_rule3">按顺序点击剩余的方块</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="memory_history">测试记录</span></div>
+                    <div class="reaction-history-list" id="memoryHistoryList">
+                        <div class="stack-empty" data-i18n="empty_no_history">暂无记录</div>
+                    </div>
+                </div>
+            </div>
+            <!-- ========== AIM RIGHT PANEL ========== -->
+            <div class="tool-aim">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="panel_status">状态</span></div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="aimRemaining">10</div>
+                            <div class="stat-label" data-i18n="aim_remaining">剩余目标</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="aimAvgTime">--</div>
+                            <div class="stat-label" data-i18n="aim_avg_time">平均耗时</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value best" id="aimBestTime">--</div>
+                            <div class="stat-label" data-i18n="aim_best_time">最佳平均</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="aim_rules">规则</span></div>
+                    <div class="reaction-tips-content">
+                        <ul style="list-style: none;">
+                            <li data-i18n="aim_rule1">点击出现的靶子</li>
+                            <li data-i18n="aim_rule2">尽可能快地点击所有靶子</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title" data-i18n="aim_history">测试记录</span></div>
+                    <div class="reaction-history-list" id="aimHistoryList">
+                        <div class="stack-empty" data-i18n="empty_no_history">暂无记录</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1228,6 +1497,8 @@
                 tab_hanoi: '汉诺塔',
                 tab_cps: 'CPS测试',
                 tab_reaction: '反应测试',
+                tab_memory: '记忆测试',
+                tab_aim: '瞄准测试',
                 tab_demo: '演示模式',
                 tab_game: '游玩模式',
                 label_disks: '盘子',
@@ -1319,7 +1590,30 @@
                 reaction_rating_normal: '普通水平',
                 reaction_rating_practice: '需要练习',
                 reaction_click_start: '点击开始',
-                reaction_ms: 'ms'
+                reaction_ms: 'ms',
+                // Memory translations
+                memory_start: '开始测试',
+                memory_level: '当前关卡',
+                memory_best: '最高关卡',
+                memory_strikes: '失误',
+                memory_history: '测试记录',
+                memory_rules: '规则',
+                memory_rule1: '记住方块上的数字位置',
+                memory_rule2: '点击 <strong>1</strong> 后，其他数字会被遮挡',
+                memory_rule3: '按顺序点击剩余的方块',
+                memory_game_over: '游戏结束！',
+                memory_level_reached: '达到关卡 {level}',
+                // Aim translations
+                aim_start: '开始测试',
+                aim_targets: '目标数量',
+                aim_remaining: '剩余目标',
+                aim_avg_time: '平均耗时',
+                aim_best_time: '最佳平均',
+                aim_history: '测试记录',
+                aim_rules: '规则',
+                aim_rule1: '点击出现的靶子',
+                aim_rule2: '尽可能快地点击所有靶子',
+                aim_ms: 'ms'
             },
             en: {
                 brand_title: 'Toolbox',
@@ -1327,6 +1621,8 @@
                 tab_hanoi: 'Tower of Hanoi',
                 tab_cps: 'CPS Test',
                 tab_reaction: 'Reaction Test',
+                tab_memory: 'Memory Test',
+                tab_aim: 'Aim Trainer',
                 tab_demo: 'Demo Mode',
                 tab_game: 'Play Mode',
                 label_disks: 'Disks',
@@ -1416,7 +1712,30 @@
                 reaction_rating_normal: 'Normal',
                 reaction_rating_practice: 'Needs Practice',
                 reaction_click_start: 'Click to Start',
-                reaction_ms: 'ms'
+                reaction_ms: 'ms',
+                // Memory translations
+                memory_start: 'Start Test',
+                memory_level: 'Level',
+                memory_best: 'Best Level',
+                memory_strikes: 'Strikes',
+                memory_history: 'History',
+                memory_rules: 'Rules',
+                memory_rule1: 'Memorize the positions of numbers',
+                memory_rule2: 'After clicking <strong>1</strong>, others will be hidden',
+                memory_rule3: 'Click the remaining tiles in order',
+                memory_game_over: 'Game Over!',
+                memory_level_reached: 'Reached Level {level}',
+                // Aim translations
+                aim_start: 'Start Test',
+                aim_targets: 'Targets',
+                aim_remaining: 'Remaining',
+                aim_avg_time: 'Avg Time',
+                aim_best_time: 'Best Avg',
+                aim_history: 'History',
+                aim_rules: 'Rules',
+                aim_rule1: 'Click the targets that appear',
+                aim_rule2: 'Click all targets as fast as possible',
+                aim_ms: 'ms'
             },
             ru: {
                 brand_title: 'Инструменты',
@@ -1424,6 +1743,8 @@
                 tab_hanoi: 'Ханойская башня',
                 tab_cps: 'CPS Тест',
                 tab_reaction: 'Тест реакции',
+                tab_memory: 'Тест памяти',
+                tab_aim: 'Тренировка аима',
                 tab_demo: 'Демонстрация',
                 tab_game: 'Игра',
                 label_disks: 'Диски',
@@ -1513,7 +1834,30 @@
                 reaction_rating_normal: 'Нормально',
                 reaction_rating_practice: 'Нужна практика',
                 reaction_click_start: 'Нажмите для начала',
-                reaction_ms: 'мс'
+                reaction_ms: 'мс',
+                // Memory translations
+                memory_start: 'Начать тест',
+                memory_level: 'Уровень',
+                memory_best: 'Лучший ур.',
+                memory_strikes: 'Ошибки',
+                memory_history: 'История',
+                memory_rules: 'Правила',
+                memory_rule1: 'Запомните позиции чисел',
+                memory_rule2: 'После нажатия <strong>1</strong> остальные скроются',
+                memory_rule3: 'Нажимайте оставшиеся плитки по порядку',
+                memory_game_over: 'Игра окончена!',
+                memory_level_reached: 'Достигнут ур. {level}',
+                // Aim translations
+                aim_start: 'Начать',
+                aim_targets: 'Цели',
+                aim_remaining: 'Осталось',
+                aim_avg_time: 'Ср. время',
+                aim_best_time: 'Лучшее',
+                aim_history: 'История',
+                aim_rules: 'Правила',
+                aim_rule1: 'Нажимайте на появляющиеся цели',
+                aim_rule2: 'Как можно быстрее',
+                aim_ms: 'мс'
             },
             ja: {
                 brand_title: '工具箱',
@@ -1521,6 +1865,8 @@
                 tab_hanoi: 'ハノイの塔',
                 tab_cps: 'CPSテスト',
                 tab_reaction: '反応テスト',
+                tab_memory: '記憶力テスト',
+                tab_aim: 'エイム練習',
                 tab_demo: 'デモモード',
                 tab_game: 'プレイモード',
                 label_disks: 'ディスク',
@@ -1610,7 +1956,30 @@
                 reaction_rating_normal: '普通',
                 reaction_rating_practice: '練習が必要',
                 reaction_click_start: 'クリックして開始',
-                reaction_ms: 'ms'
+                reaction_ms: 'ms',
+                // Memory translations
+                memory_start: 'テスト開始',
+                memory_level: 'レベル',
+                memory_best: '最高レベル',
+                memory_strikes: 'ミス',
+                memory_history: 'テスト履歴',
+                memory_rules: 'ルール',
+                memory_rule1: '数字の位置を覚える',
+                memory_rule2: '<strong>1</strong>をクリックすると他の数字が隠れます',
+                memory_rule3: '残りのタイルを順番にクリックする',
+                memory_game_over: 'ゲームオーバー！',
+                memory_level_reached: '到達レベル {level}',
+                // Aim translations
+                aim_start: 'テスト開始',
+                aim_targets: 'ターゲット数',
+                aim_remaining: '残り',
+                aim_avg_time: '平均時間',
+                aim_best_time: '最高平均',
+                aim_history: 'テスト履歴',
+                aim_rules: 'ルール',
+                aim_rule1: '表示されるターゲットをクリック',
+                aim_rule2: 'できるだけ早くすべてクリックする',
+                aim_ms: 'ms'
             }
         };
 
@@ -1734,11 +2103,19 @@
             currentTool = tool;
             document.body.classList.toggle('cps-active', tool === 'cps');
             document.body.classList.toggle('reaction-active', tool === 'reaction');
+            document.body.classList.toggle('memory-active', tool === 'memory');
+            document.body.classList.toggle('aim-active', tool === 'aim');
             document.body.classList.remove('game-active');
 
             // Update top-level tabs
             document.querySelectorAll('.tab-bar .tab-btn').forEach((btn, i) => {
-                btn.classList.toggle('active', (i === 0 && tool === 'hanoi') || (i === 1 && tool === 'cps') || (i === 2 && tool === 'reaction'));
+                btn.classList.toggle('active', 
+                    (i === 0 && tool === 'hanoi') || 
+                    (i === 1 && tool === 'cps') || 
+                    (i === 2 && tool === 'reaction') ||
+                    (i === 3 && tool === 'memory') ||
+                    (i === 4 && tool === 'aim')
+                );
             });
 
             // Show/hide tutorial button
@@ -1759,6 +2136,10 @@
             } else if (tool === 'reaction') {
                 // Reset reaction
                 resetReactionUI();
+            } else if (tool === 'memory') {
+                resetMemoryTest();
+            } else if (tool === 'aim') {
+                resetAimTest();
             }
         }
 
@@ -1872,6 +2253,8 @@
             loadCPSHistory();
             setupReactionListeners();
             loadReactionHistory();
+            loadMemoryHistory();
+            loadAimHistory();
         });
 
         function setupDemoListeners() {
@@ -2743,6 +3126,360 @@
             resetReactionArea();
             updateReactionStats();
             renderReactionHistory();
+        }
+        // ==================== MEMORY MODULE ====================
+        let memoryState = {
+            level: 3,
+            sequence: [],
+            currentClick: 1,
+            isRunning: false,
+            strikes: 0,
+            history: [],
+            bestLevel: 3,
+            gridSize: 36 // 6x6
+        };
+
+        function startMemoryTest() {
+            if (memoryState.isRunning) return;
+            
+            memoryState.isRunning = true;
+            memoryState.level = 3;
+            memoryState.strikes = 0;
+            document.getElementById('memoryStartBtn').disabled = true;
+            document.getElementById('memoryOverlay').classList.remove('active');
+            
+            updateMemoryStats();
+            generateMemoryLevel();
+        }
+
+        function resetMemoryTest() {
+            memoryState.isRunning = false;
+            document.getElementById('memoryStartBtn').disabled = false;
+            document.getElementById('memoryOverlay').classList.remove('active');
+            document.getElementById('memoryGrid').innerHTML = '';
+            
+            memoryState.level = 3;
+            memoryState.strikes = 0;
+            updateMemoryStats();
+        }
+
+        function generateMemoryLevel() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            
+            memoryState.sequence = [];
+            memoryState.currentClick = 1;
+            
+            // Generate available positions
+            let availablePos = [];
+            for (let i = 0; i < memoryState.gridSize; i++) {
+                availablePos.push(i);
+            }
+            
+            // Pick random positions
+            for (let i = 1; i <= memoryState.level; i++) {
+                const randIdx = Math.floor(Math.random() * availablePos.length);
+                const pos = availablePos.splice(randIdx, 1)[0];
+                memoryState.sequence.push({ num: i, pos: pos });
+            }
+            
+            // Render grid
+            for (let i = 0; i < memoryState.gridSize; i++) {
+                const cell = document.createElement('div');
+                
+                const item = memoryState.sequence.find(s => s.pos === i);
+                if (item) {
+                    cell.className = 'memory-tile';
+                    cell.textContent = item.num;
+                    cell.dataset.num = item.num;
+                    cell.onclick = () => handleMemoryClick(cell, item.num);
+                    
+                    // Animate in
+                    setTimeout(() => {
+                        cell.classList.add('visible');
+                    }, 50 * item.num);
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
+
+        function handleMemoryClick(cell, num) {
+            if (!memoryState.isRunning || cell.classList.contains('clicked')) return;
+            
+            if (num === memoryState.currentClick) {
+                // Correct click
+                cell.classList.add('clicked');
+                
+                // If it was the first click, hide the rest
+                if (num === 1) {
+                    document.querySelectorAll('.memory-tile:not(.clicked)').forEach(t => {
+                        t.classList.add('hidden-number');
+                    });
+                }
+                
+                memoryState.currentClick++;
+                
+                // Check level complete
+                if (memoryState.currentClick > memoryState.level) {
+                    setTimeout(() => {
+                        memoryState.level++;
+                        updateMemoryStats();
+                        generateMemoryLevel();
+                    }, 500);
+                }
+            } else {
+                // Wrong click
+                cell.classList.remove('hidden-number');
+                cell.classList.add('error-shake');
+                
+                // Reveal all
+                document.querySelectorAll('.memory-tile').forEach(t => {
+                    t.classList.remove('hidden-number');
+                });
+                
+                memoryState.strikes++;
+                updateMemoryStats();
+                endMemoryTest();
+            }
+        }
+
+        function endMemoryTest() {
+            memoryState.isRunning = false;
+            
+            // Save history
+            if (memoryState.level > memoryState.bestLevel) {
+                memoryState.bestLevel = memoryState.level;
+                localStorage.setItem('toolbox_memory_best', memoryState.bestLevel);
+            }
+            
+            memoryState.history.unshift({
+                level: memoryState.level,
+                date: new Date().toLocaleTimeString()
+            });
+            if (memoryState.history.length > 10) memoryState.history.pop();
+            localStorage.setItem('toolbox_memory_history', JSON.stringify(memoryState.history));
+            
+            // Show overlay
+            setTimeout(() => {
+                const overlay = document.getElementById('memoryOverlay');
+                document.getElementById('memoryResultLevel').textContent = tReplace('memory_level_reached', { level: memoryState.level });
+                overlay.classList.add('active');
+                
+                updateMemoryStats();
+                renderMemoryHistory();
+            }, 800);
+        }
+
+        function updateMemoryStats() {
+            document.getElementById('memoryLevel').textContent = memoryState.level;
+            document.getElementById('memoryBest').textContent = memoryState.bestLevel;
+            document.getElementById('memoryStrikes').textContent = memoryState.strikes;
+        }
+
+        function loadMemoryHistory() {
+            const best = localStorage.getItem('toolbox_memory_best');
+            if (best) memoryState.bestLevel = parseInt(best);
+            
+            const saved = localStorage.getItem('toolbox_memory_history');
+            if (saved) {
+                try { memoryState.history = JSON.parse(saved); } catch (e) {}
+            }
+            
+            updateMemoryStats();
+            renderMemoryHistory();
+        }
+
+        function renderMemoryHistory() {
+            const list = document.getElementById('memoryHistoryList');
+            if (memoryState.history.length === 0) {
+                list.innerHTML = `<div class="stack-empty">${t('empty_no_history')}</div>`;
+                return;
+            }
+            
+            list.innerHTML = memoryState.history.map(item => `
+                <div class="reaction-history-item">
+                    <span class="reaction-history-time" style="color:var(--accent-purple)">Level ${item.level}</span>
+                    <span class="reaction-history-date">${item.date}</span>
+                </div>
+            `).join('');
+        }
+        // ==================== AIM MODULE ====================
+        let aimState = {
+            targetCount: 10,
+            remaining: 10,
+            isRunning: false,
+            startTime: null,
+            lastClickTime: null,
+            totalTime: 0,
+            history: [],
+            bestAvg: {
+                10: Infinity,
+                20: Infinity,
+                30: Infinity
+            }
+        };
+
+        function switchAimMode(count) {
+            if (aimState.isRunning) return;
+            aimState.targetCount = count;
+            aimState.remaining = count;
+            
+            document.querySelectorAll('.tool-aim .sub-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.textContent) === count);
+            });
+            
+            document.getElementById('aimRemaining').textContent = count;
+            
+            const best = aimState.bestAvg[count];
+            document.getElementById('aimBestTime').textContent = best === Infinity ? '--' : best + ' ' + t('aim_ms');
+        }
+
+        function startAimTest() {
+            if (aimState.isRunning) return;
+            
+            aimState.isRunning = true;
+            aimState.remaining = aimState.targetCount;
+            aimState.totalTime = 0;
+            aimState.startTime = performance.now();
+            aimState.lastClickTime = performance.now();
+            
+            document.getElementById('aimStartBtn').disabled = true;
+            document.getElementById('aimStartScreen').classList.add('hidden');
+            
+            updateAimStats();
+            spawnAimTarget();
+        }
+
+        function resetAimTest() {
+            aimState.isRunning = false;
+            document.getElementById('aimStartBtn').disabled = false;
+            document.getElementById('aimStartScreen').classList.remove('hidden');
+            
+            // Remove existing targets
+            document.querySelectorAll('.aim-target').forEach(t => t.remove());
+            
+            aimState.remaining = aimState.targetCount;
+            document.getElementById('aimRemaining').textContent = aimState.remaining;
+            document.getElementById('aimAvgTime').textContent = '--';
+        }
+
+        function spawnAimTarget() {
+            const area = document.getElementById('aimArea');
+            const target = document.createElement('div');
+            target.className = 'aim-target';
+            
+            // Calculate bounds (50px width/height)
+            const padding = 25;
+            const maxX = area.clientWidth - padding * 2;
+            const maxY = area.clientHeight - padding * 2;
+            
+            const x = Math.max(padding, Math.random() * maxX);
+            const y = Math.max(padding, Math.random() * maxY);
+            
+            target.style.left = x + 'px';
+            target.style.top = y + 'px';
+            
+            target.onmousedown = (e) => {
+                e.preventDefault(); // Prevent text selection
+                if (!aimState.isRunning) return;
+                
+                target.remove();
+                aimState.remaining--;
+                
+                const now = performance.now();
+                const timeTaken = now - aimState.lastClickTime;
+                aimState.totalTime += timeTaken;
+                aimState.lastClickTime = now;
+                
+                updateAimStats();
+                
+                if (aimState.remaining > 0) {
+                    spawnAimTarget();
+                } else {
+                    endAimTest();
+                }
+            };
+            
+            area.appendChild(target);
+        }
+
+        function endAimTest() {
+            aimState.isRunning = false;
+            document.getElementById('aimStartBtn').disabled = false;
+            
+            const screen = document.getElementById('aimStartScreen');
+            const avg = Math.round(aimState.totalTime / aimState.targetCount);
+            
+            screen.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="reaction-time">${avg}<span style="font-size: 1.5rem; margin-left: 4px;">${t('aim_ms')}</span></div>
+                    <div class="reaction-sub-text" style="color: var(--text-secondary); margin-bottom: 16px;">${t('aim_avg_time')}</div>
+                    <div class="aim-start-text" style="font-size: 1rem; cursor: pointer;" onclick="resetAimTest()">${t('empty_click_start')}</div>
+                </div>
+            `;
+            screen.classList.remove('hidden');
+            
+            // Save best
+            if (avg < aimState.bestAvg[aimState.targetCount]) {
+                aimState.bestAvg[aimState.targetCount] = avg;
+                localStorage.setItem(`toolbox_aim_best_${aimState.targetCount}`, avg);
+            }
+            
+            // Save history
+            aimState.history.unshift({
+                count: aimState.targetCount,
+                avg: avg,
+                date: new Date().toLocaleTimeString()
+            });
+            if (aimState.history.length > 10) aimState.history.pop();
+            localStorage.setItem('toolbox_aim_history', JSON.stringify(aimState.history));
+            
+            switchAimMode(aimState.targetCount); // Refresh best UI
+            renderAimHistory();
+        }
+
+        function updateAimStats() {
+            document.getElementById('aimRemaining').textContent = aimState.remaining;
+            
+            if (aimState.remaining < aimState.targetCount) {
+                const clicked = aimState.targetCount - aimState.remaining;
+                const avg = Math.round(aimState.totalTime / clicked);
+                document.getElementById('aimAvgTime').textContent = avg + ' ' + t('aim_ms');
+            }
+        }
+
+        function loadAimHistory() {
+            [10, 20, 30].forEach(count => {
+                const best = localStorage.getItem(`toolbox_aim_best_${count}`);
+                if (best) aimState.bestAvg[count] = parseInt(best);
+            });
+            
+            const saved = localStorage.getItem('toolbox_aim_history');
+            if (saved) {
+                try { aimState.history = JSON.parse(saved); } catch (e) {}
+            }
+            
+            switchAimMode(10); // Initial UI update
+            renderAimHistory();
+        }
+
+        function renderAimHistory() {
+            const list = document.getElementById('aimHistoryList');
+            if (aimState.history.length === 0) {
+                list.innerHTML = `<div class="stack-empty">${t('empty_no_history')}</div>`;
+                return;
+            }
+            
+            list.innerHTML = aimState.history.map(item => `
+                <div class="reaction-history-item">
+                    <div>
+                        <span class="reaction-history-time">${item.avg} ${t('aim_ms')}</span>
+                        <span class="reaction-history-rating normal" style="margin-left: 8px;">${item.count}</span>
+                    </div>
+                    <span class="reaction-history-date">${item.date}</span>
+                </div>
+            `).join('');
         }
     </script>
 </body>
