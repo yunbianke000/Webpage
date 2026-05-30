@@ -1603,6 +1603,7 @@
                 memory_rule3: '按顺序点击剩余的方块',
                 memory_game_over: '游戏结束！',
                 memory_level_reached: '达到关卡 {level}',
+                memory_level_record: '关卡 {level}',
                 // Aim translations
                 aim_start: '开始测试',
                 aim_targets: '目标数量',
@@ -1725,6 +1726,7 @@
                 memory_rule3: 'Click the remaining tiles in order',
                 memory_game_over: 'Game Over!',
                 memory_level_reached: 'Reached Level {level}',
+                memory_level_record: 'Level {level}',
                 // Aim translations
                 aim_start: 'Start Test',
                 aim_targets: 'Targets',
@@ -1847,6 +1849,7 @@
                 memory_rule3: 'Нажимайте оставшиеся плитки по порядку',
                 memory_game_over: 'Игра окончена!',
                 memory_level_reached: 'Достигнут ур. {level}',
+                memory_level_record: 'Ур. {level}',
                 // Aim translations
                 aim_start: 'Начать',
                 aim_targets: 'Цели',
@@ -1969,6 +1972,7 @@
                 memory_rule3: '残りのタイルを順番にクリックする',
                 memory_game_over: 'ゲームオーバー！',
                 memory_level_reached: '到達レベル {level}',
+                memory_level_record: 'Lv.{level}',
                 // Aim translations
                 aim_start: 'テスト開始',
                 aim_targets: 'ターゲット数',
@@ -2078,6 +2082,46 @@
             }
             // Re-render reaction history
             renderReactionHistory();
+
+            // Re-render Memory overlay if visible
+            const memoryOverlay = document.getElementById('memoryOverlay');
+            if (memoryOverlay && memoryOverlay.classList.contains('active')) {
+                document.getElementById('memoryResultLevel').textContent = tReplace('memory_level_reached', { level: memoryState.level });
+            }
+            renderMemoryHistory();
+
+            // Re-render Aim screen if visible
+            const aimScreen = document.getElementById('aimStartScreen');
+            if (aimScreen && !aimScreen.classList.contains('hidden')) {
+                if (!aimState.isRunning && aimState.totalTime > 0) {
+                    const avg = Math.round(aimState.totalTime / aimState.targetCount);
+                    aimScreen.innerHTML = `
+                        <div style="text-align: center;">
+                            <div class="reaction-time">${avg}<span style="font-size: 1.5rem; margin-left: 4px;">${t('aim_ms')}</span></div>
+                            <div class="reaction-sub-text" style="color: var(--text-secondary); margin-bottom: 16px;">${t('aim_avg_time')}</div>
+                            <div class="aim-start-text" style="font-size: 1rem; cursor: pointer;" onclick="resetAimTest()">${t('empty_click_start')}</div>
+                        </div>
+                    `;
+                } else {
+                    aimScreen.innerHTML = `<div class="aim-start-text" data-i18n="empty_click_start">${t('empty_click_start')}</div>`;
+                }
+            }
+            
+            // Re-render Aim stats
+            const bestAim = aimState.bestAvg[aimState.targetCount];
+            document.getElementById('aimBestTime').textContent = bestAim === Infinity ? '--' : bestAim + ' ' + t('aim_ms');
+            
+            if (aimState.remaining < aimState.targetCount && aimState.remaining > 0) {
+                const clicked = aimState.targetCount - aimState.remaining;
+                const avg = Math.round(aimState.totalTime / clicked);
+                document.getElementById('aimAvgTime').textContent = avg + ' ' + t('aim_ms');
+            } else if (aimState.remaining === 0 && aimState.totalTime > 0) {
+                const avg = Math.round(aimState.totalTime / aimState.targetCount);
+                document.getElementById('aimAvgTime').textContent = avg + ' ' + t('aim_ms');
+            } else {
+                document.getElementById('aimAvgTime').textContent = '--';
+            }
+            renderAimHistory();
         }
 
         function updateCodeExplanations() {
@@ -3299,7 +3343,7 @@
             
             list.innerHTML = memoryState.history.map(item => `
                 <div class="reaction-history-item">
-                    <span class="reaction-history-time" style="color:var(--accent-purple)">Level ${item.level}</span>
+                    <span class="reaction-history-time" style="color:var(--accent-purple)">${tReplace('memory_level_record', { level: item.level })}</span>
                     <span class="reaction-history-date">${item.date}</span>
                 </div>
             `).join('');
